@@ -70,7 +70,7 @@
                 content: "Sometimes you want to be able to let users sort the results, such as in this case where they might want to sort the results by salary, however, sometimes you will want to tune the results that are displayed to the user using 'Scoring'.  This allows you to boost items in the search relevant results in order to improve the user experience or to help meet business objectives.&nbsp;&nbsp;&nbsp;<a href='https://msdn.microsoft.com/en-us/library/azure/dn798928.aspx' target='_blank'>Learn More about Search Scoring</a>"
             },
             {
-                element: "#businessTitleFacetTitle",
+                element: "#MessageTypeFacetTitle",
                 placement: "right",
                 title: "Faceting & Filtering",
                 content: "Faceted navigation is a filtering mechanism that provides self-directed drilldown navigation in search applications. While the term ‘faceted navigation’ might be unfamiliar, it’s almost a given that you have used one before. As the following example shows, faceted navigation is nothing more than the categories used to filter results.  Try clicking on a facet and see how the results are filtered to only include the specified results.&nbsp;&nbsp;&nbsp;<a href='https://msdn.microsoft.com/en-us/library/azure/dn798927.aspx' target='_blank'>Learn More</a>"
@@ -90,7 +90,7 @@
 </script>
 
 <script type="text/javascript">
-    var businessTitleFacet, postingTypeFacet, salaryRangeFacet, sortType, currentPage, zipCode, maxDistance;
+    var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, sortType, currentPage, zipCode, maxDistance;
     var map = null;
     var lat = 40.736224;
     var lon = -73.992511;
@@ -102,8 +102,10 @@
     $(function () {
         // Load the initial data
         currentPage = 1;
-        businessTitleFacet = '';
-        postingTypeFacet = '';
+        MessageTypeFacet = '';
+        SendingPartnerTypeFacet = '';
+        ReceivePartnerTypeFacet = '';
+        DocDateTypeFacet = '';
         salaryRangeFacet = '';
         document.getElementById("q").focus();
         sortType = 'featured';
@@ -135,81 +137,64 @@
         $.post('/home/search',
         {
             q: q,
-            businessTitleFacet: businessTitleFacet,
-            postingTypeFacet: postingTypeFacet,
-            salaryRangeFacet: salaryRangeFacet,
-            sortType: sortType,
-            lat: map.getCenter().latitude,
-            lon: map.getCenter().longitude,
+            MessageTypeFacet: MessageTypeFacet,
+            SendingPartnerTypeFacet: SendingPartnerTypeFacet,
+            ReceivePartnerTypeFacet: ReceivePartnerTypeFacet,
+            DocDateTypeFacet: DocDateTypeFacet,
             currentPage: currentPage,
-            zipCode: zipCode,
-            maxDistance: maxDistance
+   
         },
         function (data) {
-            UpdateBusinessTitleFacets(data.Facets.MessageType);
-            UpdatePostingTypeFacets(data.Facets.SendPartnerName);
-            UpdateSalaryRangeFacets(data.Facets.DocDate);
+            UpdateMessageTypeFacets(data.Facets.MessageType);
+            UpdateSendingPartnerTypeFacets(data.Facets.SendPartnerName);
+            UpdateReceivePartnerTypeFacets(data.Facets.ReceivePartnerName);
+            UpdateDocDateTypeFacets(data.Facets.DocDate);
+            
+           
             UpdateJobDetails(data);
             UpdatePagination(data.Count);
-            //UpdateMap(data);
+           
             UpdateFilterReset();
         });
 
     }
-    //"SendPartnerName", "ReceivePartnerName", "DocDate", "MessageType","Path" 
 
     function UpdateFilterReset() {
         // This allows users to remove filters
         var htmlString = '';
-        if ((businessTitleFacet != '') || (postingTypeFacet != '') || (salaryRangeFacet |= '')) {
+        if ((MessageTypeFacet != '') || (SendingPartnerTypeFacet != '') || (ReceivePartnerTypeFacet |= '') || (DocDateTypeFacet |= '')) {
             htmlString += '<b>Current Filters:</b><br>';
-            if (businessTitleFacet != '')
-                htmlString += businessTitleFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'businessTitleFacet\')">X</a>]<br>';
-            if (postingTypeFacet != '')
-                htmlString += postingTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'postingTypeFacet\')">X</a>]<br>';
-            if (salaryRangeFacet != '') {
-                var lowRange = parseInt(salaryRangeFacet);
-                var highRange = lowRange + 49999;
-                htmlString += '$' + lowRange.toLocaleString() + ' - $' + highRange.toLocaleString() + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'salaryRangeFacet\')">X</a>]<br>';
-            }
+            if (MessageTypeFacet != '')
+                htmlString += MessageTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'MessageTypeFacet\')">X</a>]<br>';
+            if (SendingPartnerTypeFacet != '')
+                htmlString += SendingPartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'SendingPartnerTypeFacet\')">X</a>]<br>';
+            if (ReceivePartnerTypeFacet != '')
+                htmlString += ReceivePartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ReceivePartnerTypeFacet\')">X</a>]<br>';
+
+
+            if (DocDateTypeFacet != '')
+                htmlString += DocDateTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'DocDateTypeFacet\')">X</a>]<br>';
+            
+          
         }
         $("#filterReset").html(htmlString);
     }
 
     function RemoveFacet(facet) {
         // Remove a facet
-        if (facet == "businessTitleFacet")
-            businessTitleFacet = '';
-        if (facet == "postingTypeFacet")
-            postingTypeFacet = '';
-        if (facet == "salaryRangeFacet")
-            salaryRangeFacet = '';
+        if (facet == "MessageTypeFacet")
+            MessageTypeFacet = '';
+        if (facet == "SendingPartnerTypeFacet")
+            SendingPartnerTypeFacet = '';
+        if (facet == "ReceivePartnerTypeFacet")
+            ReceivePartnerTypeFacet = '';
+        if (facet == "DocDateTypeFacet")
+            DocDateTypeFacet = '';
 
         Search();
     }
 
-    function UpdateMap(data) {
-        // Iterate the results and add to map
-        while (map.entities.getLength() > 0) {
-            try {
-                map.entities.clear();
-            }
-            catch (e) {
-            }
-        }
-        pinInfobox = new Microsoft.Maps.Infobox(new Microsoft.Maps.Location(0, 0), { width: 300, height: 100, visible: false });
-        infoboxLayer.push(pinInfobox);
-        for (var i = 0; i < data.Results.length; i++) {
-            var latLon = new Microsoft.Maps.Location(data.Results[i].Document.geo_location.Latitude, data.Results[i].Document.geo_location.Longitude);
-            var pin = new Microsoft.Maps.Pushpin(latLon, { text: i + 1 });
-            pin.Title = data.Results[i].Document.business_title;
-            pin.Description = data.Results[i].Document.work_location + '<br><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '" class="read-more">Read More</a>';
-            Microsoft.Maps.Events.addHandler(pin, 'click', displayInfobox);
-            Microsoft.Maps.Events.addHandler(map, 'viewchange', hideInfobox);
-            map.entities.push(pin); //add pushpin to pinLayer
-            map.entities.push(infoboxLayer);
-        }
-    }
+   
 
     function displayInfobox(e) {
         if (e.targetType == "pushpin") {
@@ -311,34 +296,68 @@
         Search();
     }
 
-    function UpdateBusinessTitleFacets(data) {
+    function UpdateMessageTypeFacets(data) {
         var facetResultsHTML = '';
         for (var i = 0; i < data.length; i++) {
-            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseBusinessTitleFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseMessageTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
         }
 
-        $("#business_title_facets").html(facetResultsHTML);
+        $("#MessageType_facets").html(facetResultsHTML);
     }
 
-    function ChooseBusinessTitleFacet(facet) {
-        businessTitleFacet = facet;
+    function ChooseMessageTypeFacet(facet) {
+        MessageTypeFacet = facet;
         Search();
     }
 
 
-    function UpdatePostingTypeFacets(data) {
+    function UpdateSendingPartnerTypeFacets(data) {
         var facetResultsHTML = '';
         for (var i = 0; i < data.length; i++) {
-            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChoosePostingTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseSendingPartnerTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
         }
 
-        $("#posting_type_facets").html(facetResultsHTML);
+        $("#SendingPartner_type_facets").html(facetResultsHTML);
     }
 
-    function ChoosePostingTypeFacet(facet) {
-        postingTypeFacet = facet;
+    function ChooseSendingPartnerTypeFacet(facet) {
+        SendingPartnerTypeFacet = facet;
         Search();
     }
+
+
+
+    function UpdateReceivePartnerTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseReceivePartnerTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+
+        $("#ReceivePartner_type_facets").html(facetResultsHTML);
+    }
+
+    function ChooseReceivePartnerTypeFacet(facet) {
+        ReceivePartnerTypeFacet = facet;
+        Search();
+    }
+
+
+
+    function UpdateDocDateTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseDocDateTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+
+        $("#DocDate_type_facets").html(facetResultsHTML);
+    }
+    function ChooseDocDateTypeFacet(facet) {
+        DocDateTypeFacet = facet;
+        Search();
+    }
+
+
+
 
     function UpdateSalaryRangeFacets(data) {
         var facetResultsHTML = '';
@@ -381,33 +400,36 @@
         for (var i = 0; i < data.Results.length; i++) {
 
             jobDetailsHTML += '<div class="jobs-item with-thumb">';
-            imgCounter++;
-            if (imgCounter == 10)
-                imgCounter = 0;
-            jobDetailsHTML += '<div class="thumb"><img src="/images/content/bus-0' + imgCounter + '.png" alt=""></div>';
-            jobDetailsHTML += '<div class="clearfix visible-xs"></div>';
-            var postingDate = data.Results[i].Document.posting_date;
-            var date = new Date(parseInt(postingDate.substr(6)));
+            //imgCounter++;
+            //if (imgCounter == 10)
+            //    imgCounter = 0;
+            //jobDetailsHTML += '<div class="thumb"><img src="/images/content/bus-0' + imgCounter + '.png" alt=""></div>';
+           // jobDetailsHTML += '<div class="clearfix visible-xs"></div>';
+            var postingDate = data.Results[i].Document.DocDate;
+
+            var date = new Date(parseInt(postingDate));
 
             jobDetailsHTML += '<div class="date">' + date.getDay() + ' <span>' + monthNames[date.getMonth()] + '</span></div>';
 
-            var featuredListing = '';
-            if (data.Results[0].Document.tags.length > 0)
-                featuredListing = ' - Featured Job';
+            //var featuredListing = '';
+           // if (data.Results[0].Document.tags.length > 0)
+            //    featuredListing = ' - Featured Job';
 
-            jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
-            jobDetailsHTML += '<span class="meta">' + data.Results[i].Document.work_location + '</span>';
+            var docPath = data.Results[i].Document.Path;
 
-            jobDetailsHTML += '<p class="description"><b>Salary:</b> $' + data.Results[i].Document.salary_range_from.toLocaleString();
-            if (data.Results[i].Document.salary_range_from != data.Results[i].Document.salary_range_to)
-                jobDetailsHTML += ' to $' + data.Results[i].Document.salary_range_to.toLocaleString();
-            jobDetailsHTML += ' ' + data.Results[i].Document.salary_frequency + '</p>';
+            //jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
+            jobDetailsHTML += '<span class="meta">' + docPath + '</span>';
 
-            var jobDesc = data.Results[i].Document.job_description;
-            jobDesc = jobDesc.substring(0, jobDesc.substring(0, 500).lastIndexOf(' ') + 1);
-            if (data.Results[i].Highlights != null)
-                jobDesc = data.Results[i].Highlights.job_description
-            jobDetailsHTML += '<p class="description">' + jobDesc + '...&nbsp;&nbsp;&nbsp;<a href="/home/jobdetails?id=' + data.Results[i].Document.id + '" class="read-more">Read More</a></p>';
+            //jobDetailsHTML += '<p class="description"><b>Salary:</b> $' + data.Results[i].Document.salary_range_from.toLocaleString();
+            //if (data.Results[i].Document.salary_range_from != data.Results[i].Document.salary_range_to)
+            //    jobDetailsHTML += ' to $' + data.Results[i].Document.salary_range_to.toLocaleString();
+            //jobDetailsHTML += ' ' + data.Results[i].Document.salary_frequency + '</p>';
+
+            //var jobDesc = data.Results[i].Document.job_description;
+            //jobDesc = jobDesc.substring(0, jobDesc.substring(0, 500).lastIndexOf(' ') + 1);
+            //if (data.Results[i].Highlights != null)
+            //    jobDesc = data.Results[i].Highlights.job_description
+            //jobDetailsHTML += '<p class="description">' + jobDesc + '...&nbsp;&nbsp;&nbsp;<a href="/home/jobdetails?id=' + data.Results[i].Document.id + '" class="read-more">Read More</a></p>';
 
             jobDetailsHTML += '</div>';
             jobDetailsHTML += '</div>';
@@ -439,29 +461,28 @@
                         <h5 class="widget-title">Filter Results</h5>
                         <p id="filterReset"></p>
                         <div class="widget-content">
-                            <h6 id="businessTitleFacetTitle">Message Type</h6>
-                            <ul class="filter-list" id="business_title_facets">
+                            <h6 id="MessageTypeFacetTitle">Message Type</h6>
+                            <ul class="filter-list" id="MessageType_facets">
                            </ul>
 
-                            <h6>Partners</h6>
-                            <ul class="filter-list" id="posting_type_facets">
+                            <h6>Sending Partners</h6>
+                            <ul class="filter-list" id="SendingPartner_type_facets">
                             </ul>
 
-                            <h6>Posting</h6>
-                            <ul class="filter-list" id="posting_type_facets"></ul>
+                             <h6>Receive Partners</h6>
+                                <ul class="filter-list" id="ReceivePartner_type_facets"></ul>
 
-                            <h6>Date Uploaded</h6>
-                            <ul class="filter-list" id="salary_range_facets">
-                            </ul>
-                        </div>
+                            <h6>Document Date</h6>
+                            <ul class="filter-list" id="DocDate_type_facets">
+</div>
                     </div>
                 </div>
             </aside>
         </div> <!-- end .page-sidebar -->
 
         <div class="col-sm-8 page-content">
-            <div id="jobs-page-map" style="position:relative;width:750px; height:350px">
-            </div>
+          <!--   <div id="jobs-page-map" style="position:relative;width:750px; height:350px">
+            </div> -->
 
             <h3><span class="jobs-count" id="jobs-count"></span> Documents Processed</h3>
 

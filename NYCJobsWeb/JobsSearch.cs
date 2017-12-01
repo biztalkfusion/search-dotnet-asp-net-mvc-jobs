@@ -40,8 +40,8 @@ namespace NYCJobsWeb
             }
         }
 
-        public DocumentSearchResult Search(string searchText, string businessTitleFacet, string postingTypeFacet, string salaryRangeFacet,
-            string sortType, double lat, double lon, int currentPage, int maxDistance, string maxDistanceLat, string maxDistanceLon)
+        public DocumentSearchResult Search(string searchText, string MessageTypeFacet, string SendingPartnerTypeFacet, string ReceivePartnerTypeFacet,  string DocDateTypeFacet,
+             int currentPage)
         {
             try
             {
@@ -51,11 +51,50 @@ namespace NYCJobsWeb
                     Top = 10,
                     Skip = currentPage - 1,
                     // Limit results
-                    Select = new List<String>() {"id", "SendPartnerName", "ReceivePartnerName", "DocDate", "Path","MessageType"},
+                    Select = new List<String>() { "id", "SendPartnerName", "ReceivePartnerName", "DocDate", "Path", "MessageType" },
                     // Add count
                     IncludeTotalResultCount = true,
-                    Facets = new List<String>() { "SendPartnerName", "ReceivePartnerName", "DocDate", "MessageType","Path" }
+                    Facets = new List<String>() { "SendPartnerName", "ReceivePartnerName", "DocDate", "MessageType", "Path" },
                 };
+
+                    // Add filtering
+                string filter = null;
+                if (MessageTypeFacet != "")
+                    filter = "MessageType eq '" + MessageTypeFacet + "'";
+                if (SendingPartnerTypeFacet != "")
+                {
+                    if (filter != null)
+                        filter += " and ";
+                    filter += "SendPartnerName eq '" + SendingPartnerTypeFacet + "'";
+
+                }
+
+                if (ReceivePartnerTypeFacet != "")
+                {
+                    if (filter != null)
+                        filter += " and ";
+                    filter += "ReceivePartnerName eq '" + ReceivePartnerTypeFacet + "'";
+
+                }
+
+                if (DocDateTypeFacet != "")
+                {
+                    if (filter != null)
+                        filter += " and ";
+                    filter += "DocDate eq '" + DocDateTypeFacet + "'";
+                    
+                }
+
+                //if (maxDistance > 0)
+                //{
+                //    if (filter != null)
+                //        filter += " and ";
+                //    filter += "geo.distance(geo_location, geography'POINT(" + maxDistanceLon + " " + maxDistanceLat + ")') le " + maxDistance.ToString();
+                //}
+
+                sp.Filter = filter;
+
+            
                 return _indexClient.Documents.Search(searchText, sp);
             }
 
