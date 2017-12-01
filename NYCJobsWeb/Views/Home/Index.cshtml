@@ -24,8 +24,8 @@
             {
                 element: "#title",
                 placement: "bottom",
-                title: "Welcome to the Azure Search - Jobs demo website",
-                content: "This is purely a demonstration of Azure Search, meant to show the core capabilities of the search service.  Let's walk through the various capabilities of Azure Search.  To get started, press Next.&nbsp;&nbsp;&nbsp;<a href='http://aka.ms/azsearch' target='_blank'>Learn More about Azure Search</a>"
+                title: "Welcome to the Azure Search - EDI Analytics demo website",
+                content: "This is purely a demonstration of Azure Integration, Storage and Search, meant to show the core capabilities of the search service.  Let's walk through the various capabilities of Azure.  To get started, press Next.&nbsp;&nbsp;&nbsp;<a href='http://aka.ms/azsearch' target='_blank'>Learn More about EDI Analytics</a>"
             },
             {
                 element: "#q",
@@ -81,10 +81,10 @@
         });
 
         // Initialize the tour
-        tour.init();
+       // tour.init();
 
         // Start the tour
-        tour.start();
+       // tour.start();
 
     });
 </script>
@@ -146,16 +146,17 @@
             maxDistance: maxDistance
         },
         function (data) {
-            UpdateBusinessTitleFacets(data.Facets.business_title);
-            UpdatePostingTypeFacets(data.Facets.posting_type);
-            UpdateSalaryRangeFacets(data.Facets.salary_range_from);
+            UpdateBusinessTitleFacets(data.Facets.MessageType);
+            UpdatePostingTypeFacets(data.Facets.SendPartnerName);
+            UpdateSalaryRangeFacets(data.Facets.DocDate);
             UpdateJobDetails(data);
             UpdatePagination(data.Count);
-            UpdateMap(data);
+            //UpdateMap(data);
             UpdateFilterReset();
         });
 
     }
+    //"SendPartnerName", "ReceivePartnerName", "DocDate", "MessageType","Path" 
 
     function UpdateFilterReset() {
         // This allows users to remove filters
@@ -372,7 +373,7 @@
         var imgCounter = 0;
         var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         ];
-        $("#available-jobs-label").html('Available Jobs <small>(' + data.Count + " jobs)</small>");
+        $("#available-jobs-label").html('# of Documents <small>(' + data.Count + ")</small>");
         $("#jobs-count").html(data.Count);
 
         $("#available_jobs_subheader").html(data.Count + ' Available Jobs');
@@ -429,14 +430,6 @@
                             <div id="remote">
                                 <input class="form-control walkthrough-1" type="text" id="q" placeholder="Search Jobs">
 
-                                <select class="form-control pull-left walkthrough-2" id="cmbDistance" onchange="SetMaxDistance();">
-                                    <option value="0">Any distance from</option>
-                                    <option value="1">Within 1 KM of</option>
-                                    <option value="5">Within 5 KM of</option>
-                                    <option value="20">Within 20 KM of</option>
-                                    <option value="50">Within 50 KM of</option>
-                                </select>
-                                <input type="text" id="zipCode" class="form-control pull-left" value="10001" placeholder="10001" onchange="UpdateZipCode();">
                                 <input type="submit" class="search-submit" value=" " onclick="Search();">
                             </div>
                         </div>
@@ -446,18 +439,18 @@
                         <h5 class="widget-title">Filter Results</h5>
                         <p id="filterReset"></p>
                         <div class="widget-content">
-                            <h6 id="businessTitleFacetTitle">Business Title</h6>
+                            <h6 id="businessTitleFacetTitle">Message Type</h6>
                             <ul class="filter-list" id="business_title_facets">
                            </ul>
 
-                            <h6>Location</h6>
+                            <h6>Partners</h6>
                             <ul class="filter-list" id="posting_type_facets">
                             </ul>
 
-                            <h6>Posting Type</h6>
+                            <h6>Posting</h6>
                             <ul class="filter-list" id="posting_type_facets"></ul>
 
-                            <h6>Minimum Salary</h6>
+                            <h6>Date Uploaded</h6>
                             <ul class="filter-list" id="salary_range_facets">
                             </ul>
                         </div>
@@ -470,7 +463,7 @@
             <div id="jobs-page-map" style="position:relative;width:750px; height:350px">
             </div>
 
-            <h3><span class="jobs-count" id="jobs-count"></span> Available Jobs</h3>
+            <h3><span class="jobs-count" id="jobs-count"></span> Documents Processed</h3>
 
             <div class="clearfix">
                 <select class="form-control pull-left" id="cmbSortType" onchange="setSortType();">
