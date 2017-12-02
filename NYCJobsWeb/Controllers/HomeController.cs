@@ -25,9 +25,8 @@ namespace NYCJobsWeb.Controllers
             return View();
         }
 
-        public ActionResult Search(string q = "", string businessTitleFacet = "", string postingTypeFacet = "", string salaryRangeFacet = "",
-            string sortType = "", double lat = 40.736224, double lon = -73.99251, int currentPage = 0, int zipCode = 10001,
-            int maxDistance = 0)
+        public ActionResult Search(string q = "", string MessageTypeFacet = "", string SendingPartnerTypeFacet = "", string ReceivePartnerTypeFacet = "", string DocDateTypeFacet = "",
+            int currentPage = 0)
         {
             // If blank search, assume they want to search everything
             if (string.IsNullOrWhiteSpace(q))
@@ -35,21 +34,16 @@ namespace NYCJobsWeb.Controllers
 
             string maxDistanceLat = string.Empty;
             string maxDistanceLon = string.Empty;
+            if (SendingPartnerTypeFacet == "0")
+                SendingPartnerTypeFacet = "";
+            if (ReceivePartnerTypeFacet == "0")
+                ReceivePartnerTypeFacet = "";
+            if (DocDateTypeFacet == "0")
+                DocDateTypeFacet = "";
 
-            //Do a search of the zip code index to get lat / long of this location
-            //Eventually this should be extended to search beyond just zip (i.e. city)
-            if (maxDistance > 0)
-            {
-                var zipReponse = _jobsSearch.SearchZip(zipCode.ToString());
-                foreach (var result in zipReponse.Results)
-                {
-                    var doc = (dynamic)result.Document;
-                    maxDistanceLat = Convert.ToString(doc["geo_location"].Latitude, CultureInfo.InvariantCulture);
-                    maxDistanceLon = Convert.ToString(doc["geo_location"].Longitude, CultureInfo.InvariantCulture);
-                }
-            }
 
-            var response = _jobsSearch.Search(q, businessTitleFacet, postingTypeFacet, salaryRangeFacet, sortType, lat, lon, currentPage, maxDistance, maxDistanceLat, maxDistanceLon);
+
+            var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage);
             return new JsonResult
             {
                 // ***************************************************************************************************************************
