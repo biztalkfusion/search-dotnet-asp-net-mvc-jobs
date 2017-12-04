@@ -27,7 +27,7 @@ namespace NYCJobsWeb.Controllers
             if (!authCookieExists) return View(loginModel);
 
             if (string.IsNullOrEmpty(returnUrl) || returnUrl.Equals("/"))
-                return RedirectToAction("Search", "Home");
+                return RedirectToAction("Index", "Home");
 
             return Redirect(returnUrl);
             //return View(new Login());
@@ -46,7 +46,7 @@ namespace NYCJobsWeb.Controllers
             if (userdetails != null && userdetails.Id > 0)
             {
                 CreateCookie(new Login() { Id = userdetails.Id, UserName = userdetails.UserName, RoleId = userdetails.RoleId });
-                return RedirectToAction("Search", "Home");
+                return RedirectToAction("Index", "Home");
             }
 
             return View(userdetails);

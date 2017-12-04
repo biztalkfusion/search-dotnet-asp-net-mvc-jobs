@@ -30,8 +30,8 @@ namespace NYCJobsWeb.Controllers
         {
             return View();
         }
-
-        public ActionResult Search(string q = "", string MessageTypeFacet = "", string SendingPartnerTypeFacet = "", string ReceivePartnerTypeFacet = "", string DocDateTypeFacet = "",
+        [HttpPost]
+        public ActionResult Index(string q = "",string FolderTypeFacet = "", string MessageTypeFacet = "", string SendingPartnerTypeFacet = "", string ReceivePartnerTypeFacet = "", string DocDateTypeFacet = "",
             int currentPage = 0)
         {
             var folderName = "";
@@ -118,10 +118,18 @@ namespace NYCJobsWeb.Controllers
 
         }
 
-        public JsonResult GetBlobContent(string fileName, string folderName)
+        public JsonResult GetBlobContent(string fileName, string folderName,string fileName2="")
         {
             var jsonResult = "";
-            var fullfilter = PrefixUrl + folderName + "/Inbound/" + fileName;
+            var fullfilter = PrefixUrl + folderName + "/Inbound/";// + fileName;
+            if(!string.IsNullOrEmpty(fileName2))
+            {
+                fullfilter += fileName2 + "_" + fileName;
+            }
+            else
+            {
+                fullfilter += fileName;
+            }
             var searchString = "metadata_storage_path:\"" + fullfilter + "\"";
             ISearchIndexClient docdbindexClient = CreateSearchIndexClient();
             var parameters = new SearchParameters()
