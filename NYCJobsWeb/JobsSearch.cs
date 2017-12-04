@@ -41,7 +41,7 @@ namespace NYCJobsWeb
         }
 
         public DocumentSearchResult Search(string searchText, string MessageTypeFacet, string SendingPartnerTypeFacet, string ReceivePartnerTypeFacet,  string DocDateTypeFacet,
-             int currentPage)
+             int currentPage, string folderName)
         {
             try
             {
@@ -84,7 +84,12 @@ namespace NYCJobsWeb
                     filter += "DocDate eq '" + DocDateTypeFacet + "'";
                     
                 }
-
+                if (folderName != "")
+                {
+                    if (folderName != null && !string.IsNullOrEmpty(filter))
+                        filter += " and ";
+                    filter += "FolderName eq '" + folderName + "'";
+                }                    
                 //if (maxDistance > 0)
                 //{
                 //    if (filter != null)

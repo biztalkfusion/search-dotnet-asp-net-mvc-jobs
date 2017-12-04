@@ -15,7 +15,7 @@ using System.Web.Mvc;
 namespace NYCJobsWeb.Controllers
 {
     [SearchAuthorize]
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         public const string PrefixUrl = "https://kuebixedi.blob.core.windows.net/incomingedi/EDIData/";
         private JobsSearch _jobsSearch = new JobsSearch();
@@ -34,6 +34,7 @@ namespace NYCJobsWeb.Controllers
         public ActionResult Search(string q = "", string MessageTypeFacet = "", string SendingPartnerTypeFacet = "", string ReceivePartnerTypeFacet = "", string DocDateTypeFacet = "",
             int currentPage = 0)
         {
+            var folderName = "";
             // If blank search, assume they want to search everything
             if (string.IsNullOrWhiteSpace(q))
                 q = "*";
@@ -46,10 +47,23 @@ namespace NYCJobsWeb.Controllers
                 ReceivePartnerTypeFacet = "";
             if (DocDateTypeFacet == "0")
                 DocDateTypeFacet = "";
-
-
-
-            var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage);
+            currentPage = 1;
+            switch (UserId)
+            {                
+                case 2:
+                    folderName = "003CLLQ";
+                    break;
+                case 3:
+                    folderName = "003DLSS";
+                    break;
+                case 4:
+                    folderName = "003EXLA";
+                    break;
+                case 5:
+                    folderName = "008SHAF";
+                    break;
+            }
+            var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage, folderName);
             if(response==null)
                 return RedirectToAction("Index", "Home");
             return new JsonResult
