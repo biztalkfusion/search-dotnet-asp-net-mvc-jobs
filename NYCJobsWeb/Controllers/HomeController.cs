@@ -1,4 +1,7 @@
 ﻿using BingGeocoder;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
+using Newtonsoft.Json;
 using NYCJobsWeb.Attributes;
 using NYCJobsWeb.Models;
 using System;
@@ -14,6 +17,7 @@ namespace NYCJobsWeb.Controllers
     [SearchAuthorize]
     public class HomeController : Controller
     {
+        public const string PrefixUrl = "https://kuebixedi.blob.core.windows.net/incomingedi/EDIData/";
         private JobsSearch _jobsSearch = new JobsSearch();
 
         // GET: Home
@@ -100,5 +104,31 @@ namespace NYCJobsWeb.Controllers
 
         }
 
+        public JsonResult GetBlobContent(string fileName, string folderName)
+        {
+            var jsonResult = "";
+            var fullfilter = PrefixUrl + folderName + "/Inbound/" + fileName;
+            var searchString = "metadata_storage_path:\"" + fullfilter + "\"";
+            ISearchIndexClient docdbindexClient = CreateSearchIndexClient();
+            var parameters = new SearchParameters()
+            {
+                Select = new[] { "content" },
+                SearchMode = SearchMode.All,
+                QueryType = QueryType.Full
+            };
+            var documentDBResult = docdbindexClient.Documents.Search(searchString, parameters);
+            if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
+            {
+                jsonResult = JsonConvert.SerializeObject(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
+            }
+            return Json(jsonResult, JsonRequestBehavior.AllowGet);
+        }
+        private static SearchIndexClient CreateSearchIndexClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceblobApiKey"];            
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "azureblob-index", new SearchCredentials(queryApiKey));
+            return indexClient;
+        }
     }
 }

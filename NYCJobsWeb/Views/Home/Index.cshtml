@@ -6,7 +6,7 @@
 <!-- Attach CSS for step through tutorial tool -->
 <script src="~/Scripts/bootstrap-tour-standalone.min.js"></script>
 <link href="~/Content/bootstrap-tour-standalone.min.css" rel="stylesheet" />
-
+<script src="~/Scripts/bootstrap.js"></script>
 <script>
     $(function () {
         $("#q").autocomplete({
@@ -416,9 +416,16 @@
             //    featuredListing = ' - Featured Job';
 
             var docPath = data.Results[i].Document.Path;
-
+            var name = docPath.split('/');
+            var folderName = name[3];
+            var fName = name[5].split('.');
+            var finalName = fName[0];
+            if (finalName.indexOf('_') > -1) {
+                var str = finalName.split('_');
+                finalName = str[1];
+            }
             //jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
-            jobDetailsHTML += '<span class="meta">' + docPath + '</span>';
+            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\');">' + docPath + '</a></span>';
 
             //jobDetailsHTML += '<p class="description"><b>Salary:</b> $' + data.Results[i].Document.salary_range_from.toLocaleString();
             //if (data.Results[i].Document.salary_range_from != data.Results[i].Document.salary_range_to)
@@ -438,7 +445,45 @@
 
         $("#job_details_div").html(jobDetailsHTML);
     }
-
+    function showDiv(hdnfileName, hdnFoldername) {        
+        $('#pop').modal('show');        
+        $("#pop #hdnFilename").val(hdnfileName);
+        $("#pop #hdnFoldername").val(hdnFoldername);
+        showHidetabs(1);
+    }
+    function copy(selector) {
+        var $temp = $("<div>");
+        $(".modal-body").append($temp);
+        $temp.attr("contenteditable", true)
+             .html($(selector).html()).select()
+             .on("focus", function () { document.execCommand('selectAll', false, null) })
+             .focus();
+        document.execCommand("copy");
+        $temp.remove();
+    }
+    //Method to show hide tabs
+    function showHidetabs(id) {
+        $('.btf-tabpanel .e-tabpanel .Addtabmain').addClass('tabnone');
+        $('.btf-tabpanel .e-tabpanel #Editorimage' + id).removeClass('tabnone');
+        $('.btf-tabpanel .tabsbar div').removeClass('Addtabblue').addClass('Addtabgray');
+        $('.btf-tabpanel .tabsbar #Editortab' + id).removeClass('Addtabgray').addClass('Addtabblue');
+        if (id == 1) {           
+            var filename = $("#pop #hdnFilename").val();
+            var foldername = $("#pop #hdnFoldername").val();           
+            //viewSpinner(true);
+            $.ajax({
+                type: "GET",
+                data: { "fileName": filename, "folderName": foldername },
+                url: '@Url.Action("GetBlobContent", "Home")',
+                success: function (result) {
+                    //viewSpinner(false);                    
+                    if (result != null && result != "") {
+                        $("#pop #txtContent").text(result);                        
+                    }                   
+                }
+            });
+        }
+    }
 </script>
 
 <div class="container">
@@ -507,4 +552,65 @@
             </div>
         </div> <!-- end .page-content -->
     </div> <!-- end .container -->
+    <div class="modal fade" id="pop">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    Content
+                    <input type="hidden" id="hdnFilename">
+                    <input type="hidden" id="hdnFoldername">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 btf-tabpanel">
+                            <div>
+                                <div class="tabsbar">
+                                    <div id="Editortab1" class="Addtabblue" onclick="showHidetabs(1);">
+                                        EDI
+                                    </div>
+                                    @*<div id="Editortab2" class="Addtabgray" onclick="showHidetabs(2);">
+                                        Json
+                                    </div>*@
+                                </div>
+                                <div class="e-tabpanel">
+                                    <!------------------ Type Details Tab One  ------------------>
+                                    <div id="Editorimage1" class="Addtabmain" style="line-height: 24px;">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="row">
+                                                    <div class="col-md-9">
+                                                        <textarea cols="100" rows="7" id="txtContent" style="max-width:500px;" readonly></textarea>
+                                                    </div>
+                                                    <div class="col-md-3" style="padding-left: 90px;">
+                                                        <button onclick="copy('#txtContent')">Copy</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="Editorimage2" class="Addtabmain tabnone" style="line-height: 24px;">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="row">
+                                                    @*<div class="col-md-9">
+                                                        <div id="aceEditor" style="width: 475px;min-height:50px;"></div>
+                                                    </div>
+                                                    <div class="col-md-3" style="padding-left: 90px;">
+                                                        <button id="btnAceCopy" onclick="aceEditorcopy('#aceEditor')">Copy</button>
+                                                    </div>*@
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div> <!-- end .row -->
