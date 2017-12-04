@@ -90,7 +90,10 @@
 </script>
 
 <script type="text/javascript">
-    var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, sortType, currentPage, zipCode, maxDistance;
+    $(document).ready(function () {
+        Search();
+    });
+    var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet,FolderTypeFacet, sortType, currentPage, zipCode, maxDistance;
     var map = null;
     var lat = 40.736224;
     var lon = -73.992511;
@@ -524,8 +527,7 @@
                         <div class="widget-content clearfix">
                             <div id="remote">
                                 <input class="form-control walkthrough-1" type="text" id="q" placeholder="Search Jobs">
-
-                                <input type="submit" class="search-submit" value=" " onclick="Search();">
+                                <input type="submit" class="search-submit" value="" onclick="Search();">
                             </div>
                         </div>
                     </div>
