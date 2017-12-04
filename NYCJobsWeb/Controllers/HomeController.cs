@@ -36,7 +36,7 @@ namespace NYCJobsWeb.Controllers
         {
             var folderName = "";
             // If blank search, assume they want to search everything
-            if (string.IsNullOrWhiteSpace(q))
+            if (string.IsNullOrEmpty(q))
                 q = "*";
 
             string maxDistanceLat = string.Empty;
@@ -63,7 +63,11 @@ namespace NYCJobsWeb.Controllers
                     folderName = "008SHAF";
                     break;
             }
-            var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage, folderName);
+            if (!string.IsNullOrEmpty(FolderTypeFacet))
+            {
+                folderName = FolderTypeFacet;
+            }
+                var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage, folderName);
             if(response==null)
                 return RedirectToAction("Index", "Home");
             return new JsonResult

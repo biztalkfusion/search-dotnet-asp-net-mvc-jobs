@@ -131,7 +131,7 @@
 
     });
 
-    function Search() {
+    function Search() {        
         $("#job_details_div").html("Loading...");
         var q = $("#q").val();
         if (q == '')
@@ -169,19 +169,19 @@
 
     }
 
-    function UpdateFilterReset() {
+    function UpdateFilterReset() {        
         // This allows users to remove filters
         var htmlString = '';
-        if ((MessageTypeFacet != '') || (SendingPartnerTypeFacet != '') || (ReceivePartnerTypeFacet |= '') || (DocDateTypeFacet |= '')) {
+        if ((MessageTypeFacet != '') || (SendingPartnerTypeFacet != '') || (ReceivePartnerTypeFacet != '') || (DocDateTypeFacet != '') || (FolderTypeFacet != '')) {
             htmlString += '<b>Current Filters:</b><br>';
+            if (FolderTypeFacet != '')
+                htmlString += FolderTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'FolderTypeFacet\')">X</a>]<br>';
             if (MessageTypeFacet != '')
                 htmlString += MessageTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'MessageTypeFacet\')">X</a>]<br>';
             if (SendingPartnerTypeFacet != '')
                 htmlString += SendingPartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'SendingPartnerTypeFacet\')">X</a>]<br>';
             if (ReceivePartnerTypeFacet != '')
                 htmlString += ReceivePartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ReceivePartnerTypeFacet\')">X</a>]<br>';
-
-
             if (DocDateTypeFacet != '')
                 htmlString += DocDateTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'DocDateTypeFacet\')">X</a>]<br>';
             
@@ -315,7 +315,7 @@
         $("#FolderType_facets").html(facetResultsHTML);
     }
 
-    function ChooseFolderTypeFacet(facet) {
+    function ChooseFolderTypeFacet(facet) {        
         FolderTypeFacet = facet;
         Search();
     }
@@ -535,7 +535,7 @@
                         <p id="filterReset"></p>
                         <div class="widget-content">
 
-                            <h6 id="MessageTypeFacetTitle">Folder</h6>
+                            <h6 >Folder</h6>
                             <ul class="filter-list" id="FolderType_facets"></ul>
 
                                 <h6 id="MessageTypeFacetTitle">Message Type</h6>
