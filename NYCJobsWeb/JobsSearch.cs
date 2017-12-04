@@ -54,7 +54,7 @@ namespace NYCJobsWeb
                     Select = new List<String>() { "id", "SendPartnerName", "ReceivePartnerName", "DocDate", "Path", "MessageType" },
                     // Add count
                     IncludeTotalResultCount = true,
-                    Facets = new List<String>() { "SendPartnerName", "ReceivePartnerName", "DocDate", "MessageType", "Path" },
+                    Facets = new List<String>() { "SendPartnerName", "ReceivePartnerName", "DocDate", "MessageType", "FolderName", "Path" },
                 };
 
                     // Add filtering

@@ -107,6 +107,7 @@
         ReceivePartnerTypeFacet = '';
         DocDateTypeFacet = '';
         salaryRangeFacet = '';
+        FolderTypeFacet = '';
         document.getElementById("q").focus();
         sortType = 'featured';
 
@@ -141,6 +142,8 @@
             SendingPartnerTypeFacet: SendingPartnerTypeFacet,
             ReceivePartnerTypeFacet: ReceivePartnerTypeFacet,
             DocDateTypeFacet: DocDateTypeFacet,
+            FolderTypeFacet: FolderTypeFacet,
+
             currentPage: currentPage,
    
         },
@@ -149,6 +152,8 @@
             UpdateSendingPartnerTypeFacets(data.Facets.SendPartnerName);
             UpdateReceivePartnerTypeFacets(data.Facets.ReceivePartnerName);
             UpdateDocDateTypeFacets(data.Facets.DocDate);
+            UpdateFolderTypeFacets(data.Facets.FolderName);
+
             
            
             UpdateJobDetails(data);
@@ -293,6 +298,20 @@
 
     function GoToPage(page) {
         currentPage = page;
+        Search();
+    }
+
+    function UpdateFolderTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseFolderTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+
+        $("#FolderType_facets").html(facetResultsHTML);
+    }
+
+    function ChooseFolderTypeFacet(facet) {
+        MessageTypeFacet = facet;
         Search();
     }
 
@@ -506,19 +525,21 @@
                         <h5 class="widget-title">Filter Results</h5>
                         <p id="filterReset"></p>
                         <div class="widget-content">
-                            <h6 id="MessageTypeFacetTitle">Message Type</h6>
-                            <ul class="filter-list" id="MessageType_facets">
-                           </ul>
 
-                            <h6>Sending Partners</h6>
-                            <ul class="filter-list" id="SendingPartner_type_facets">
-                            </ul>
+                            <h6 id="MessageTypeFacetTitle">Folder</h6>
+                            <ul class="filter-list" id="FolderType_facets">
 
-                             <h6>Receive Partners</h6>
+                                <h6 id="MessageTypeFacetTitle">Message Type</h6>
+                                <ul class="filter-list" id="MessageType_facets"></ul>
+
+                                <h6>Sending Partners</h6>
+                                <ul class="filter-list" id="SendingPartner_type_facets"></ul>
+
+                                <h6>Receive Partners</h6>
                                 <ul class="filter-list" id="ReceivePartner_type_facets"></ul>
 
-                            <h6>Document Date</h6>
-                            <ul class="filter-list" id="DocDate_type_facets">
+                                <h6>Document Date</h6>
+                                <ul class="filter-list" id="DocDate_type_facets">
 </div>
                     </div>
                 </div>
