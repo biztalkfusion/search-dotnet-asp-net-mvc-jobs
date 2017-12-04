@@ -1,0 +1,200 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.red-td {
+    color: red;
+}
+
+.facets {
+    padding-right: 100px;
+    float: left;
+}
+
+.results {
+    width: 97%;
+}
+
+.toppadding {
+    padding-top: 7px;
+}
+
+.row.col-padding-5 .col-md-6,
+.row.col-padding-5 .col-md-4,
+.row.col-padding-5 .col-md-2 {
+    padding-left: 3px;
+    padding-right: 3px;
+}
+.tabsbar {
+    background-color: #FFF;
+    height: 52px;
+    border-bottom: 1px solid #8cbeaf;
+}
+.Addtabmain {
+    background-color: #FFF;
+    padding: 15px;
+}
+
+.Addtabblue {
+    color: lightskyblue;
+    padding: 15px 20px;
+    cursor: pointer;
+    float: left;
+    background-color: #FFF;
+    border-bottom: 4px solid lightskyblue;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.Addtabgray {
+    color: #878787;
+    padding: 15px 20px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border: 1px solid #FFF;
+    border-bottom: none;
+    cursor: pointer;
+    float: left;
+    font-size: 12px;
+}
+
+.tabnone {
+    display: none;
+}
+.tabpanel {
+    width: 100%;
+    background-color: #eef5f1;
+    height: auto;
+    border-bottom: 4px solid #d8ece0;
+}
+
+
+
+.p-loading, .p-loading-image {
+    background-color: rgba(0,0,0,0.2);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.p-loading-image, .p-loading-mask, .p-loading-text {
+    position: fixed;
+}
+
+.p-loading-mask {
+    z-index: 100;
+}
+
+    .p-loading-mask .p-loading-progress {
+        margin: auto;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+.p-loading-text {
+    text-indent: -4000px;
+    text-align: center;
+}
+
+.p-loading-color, .p-loading-image {
+    width: 100%;
+    height: 100%;
+}
+
+.p-loading-image {
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-image: url('loading-image.gif');
+}
+
+.p-loading-color {
+    filter: alpha(opacity=30);
+    opacity: .3;
+    background-color: #fff;
+}
+
+#wrapper {
+    padding-left: 0;
+}
+
+#page-wrapper {
+    width: 100%;
+    padding: 0;
+    background-color: #e9e9e9;
+}
+
+
+.Slbl {
+    padding: 10px
+}
+
+.SGl {
+    border: 1px solid #ccc;
+    margin: 15px 0px;
+    text-align: center;
+    height: 400px;
+    padding-top: 200px
+}
+
+
+.docs-item {
+	margin-bottom: 15px;
+	padding: 20px 20px 20px 0;
+	position: relative;
+}
+.docs-item:first-child {margin-top: 20px;}
+.docs-item .thumb {
+	display: none;
+	padding: 3px;
+	float: left;
+	border: 1px solid #e7e7e7;
+	margin-right: 18px;
+}
+.docs-item.with-thumb .thumb,
+.docs-single-item .thumb {
+	display: block;
+	margin-bottom: 8px;
+}
+.docs-item .description  {margin-bottom: 10px;}
+.docs-item.compact .description  {display: none;}
+.docs-item .content {
+	display: none;
+	padding-top: 20px;
+}
+.page-content
+ {
+	padding-top: 30px;
+	padding-bottom: 30px;
+}
+.page-content h3 {
+	position: relative;
+	display: block;
+	width: 100%;
+	text-align: center;
+	margin: 15px auto 25px;
+}
+span.docs-count {color: #000;}

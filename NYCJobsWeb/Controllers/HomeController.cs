@@ -1,4 +1,5 @@
 ﻿using BingGeocoder;
+using NYCJobsWeb.Attributes;
 using NYCJobsWeb.Models;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Web.Mvc;
 
 namespace NYCJobsWeb.Controllers
 {
+    [SearchAuthorize]
     public class HomeController : Controller
     {
         private JobsSearch _jobsSearch = new JobsSearch();
@@ -44,6 +46,8 @@ namespace NYCJobsWeb.Controllers
 
 
             var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage);
+            if(response==null)
+                return RedirectToAction("Index", "Home");
             return new JsonResult
             {
                 // ***************************************************************************************************************************
