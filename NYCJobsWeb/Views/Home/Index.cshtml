@@ -89,7 +89,7 @@
     });
 </script>
 
-<script type="text/javascript">
+<script>
     $(document).ready(function () {
         Search();
     });
@@ -129,9 +129,6 @@
                 Search();
             }
         });
-
-
-
     });
 
     function Search() {
@@ -174,28 +171,33 @@
         },
         function (data) {
             UpdateErrorMessageFacets(data.Facets.FolderName);
-            if (ErrorMessageFacet != '') {
+            if (ErrorMessageFacet != '' && ErrorMessageFacet!=undefined) {
                 isErroMessage = true;
                 UpdateJobDetails(data);
             }
 
         });
     }
-    function UpdateFilterReset() {
+    function UpdateFilterReset() {        
         // This allows users to remove filters
         var htmlString = '';
-        if ((MessageTypeFacet != '') || (SendingPartnerTypeFacet != '') || (ReceivePartnerTypeFacet != '') || (DocDateTypeFacet != '') || (FolderTypeFacet != '')) {
+        if ((MessageTypeFacet != '' && MessageTypeFacet != undefined) || (SendingPartnerTypeFacet != '' && SendingPartnerTypeFacet != undefined) || (ReceivePartnerTypeFacet != '' && ReceivePartnerTypeFacet != undefined) || (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) || (FolderTypeFacet != '' && FolderTypeFacet != undefined)) {
             htmlString += '<b>Current Filters:</b><br>';
-            if (FolderTypeFacet != '')
+            if (FolderTypeFacet != '' && FolderTypeFacet != undefined) {
                 htmlString += FolderTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'FolderTypeFacet\')">X</a>]<br>';
-            if (MessageTypeFacet != '')
+            }
+            if (MessageTypeFacet != '' && MessageTypeFacet != undefined) {
                 htmlString += MessageTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'MessageTypeFacet\')">X</a>]<br>';
-            if (SendingPartnerTypeFacet != '')
+            }
+            if (SendingPartnerTypeFacet != '' && SendingPartnerTypeFacet != undefined) {
                 htmlString += SendingPartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'SendingPartnerTypeFacet\')">X</a>]<br>';
-            if (ReceivePartnerTypeFacet != '')
+            }
+            if (ReceivePartnerTypeFacet != '' && ReceivePartnerTypeFacet != undefined) {
                 htmlString += ReceivePartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ReceivePartnerTypeFacet\')">X</a>]<br>';
-            if (DocDateTypeFacet != '')
+            }
+            if (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) {
                 htmlString += DocDateTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'DocDateTypeFacet\')">X</a>]<br>';
+            }
 
 
         }
@@ -204,6 +206,8 @@
 
     function RemoveFacet(facet) {
         // Remove a facet
+        if (facet == "FolderTypeFacet")
+            FolderTypeFacet = '';
         if (facet == "MessageTypeFacet")
             MessageTypeFacet = '';
         if (facet == "SendingPartnerTypeFacet")
@@ -457,7 +461,7 @@
 
             var date = new Date(parseInt(postingDate));
 
-            jobDetailsHTML += '<div class="date">' + date.getDay() + ' <span>' + monthNames[date.getMonth()] + '</span></div>';
+            //jobDetailsHTML += '<div class="date">' + date.getDay() + ' <span>' + monthNames[date.getMonth()] + '</span></div>';
 
             //var featuredListing = '';
             // if (data.Results[0].Document.tags.length > 0)
@@ -476,7 +480,7 @@
             }
             var hdnName = "hdn" + finalName;            
             var content = '';
-            if (isErroMessage)
+            if (isErroMessage!=undefined && isErroMessage == true)
             {
                 content = data.Results[i].Document.ExceptionMessage;
             }
@@ -592,12 +596,12 @@
             <h3><span class="jobs-count" id="jobs-count"></span> Documents Processed</h3>
 
             <div class="clearfix">
-                <select class="form-control pull-left" id="cmbSortType" onchange="setSortType();">
+                @*<select class="form-control pull-left" id="cmbSortType" onchange="setSortType();">
                     <option value="featured">Relevance</option>
                     <option value="salaryDesc">Salary (High to Low)</option>
                     <option value="salaryIncr">Salary (Low to High)</option>
                     <option value="mostRecent">Most Recently Added</option>
-                </select>
+                </select>*@
 
                 <ul id="pagination" class="pagination pull-right">
                 </ul>
