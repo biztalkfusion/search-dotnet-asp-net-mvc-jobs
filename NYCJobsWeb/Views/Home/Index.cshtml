@@ -93,7 +93,7 @@
     $(document).ready(function () {
         Search();
     });
-    var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet,FolderTypeFacet, sortType, currentPage, zipCode, maxDistance;
+    var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, FolderTypeFacet, ErrorMessageFacet, sortType, currentPage, zipCode, maxDistance;
     var map = null;
     var lat = 40.736224;
     var lon = -73.992511;
@@ -101,7 +101,7 @@
     var pinInfobox = null;
     var infoboxLayer = new Microsoft.Maps.EntityCollection();
     var pinLayer = new Microsoft.Maps.EntityCollection();
-
+    var isErroMessage = false;
     $(function () {
         // Load the initial data
         currentPage = 1;
@@ -111,6 +111,7 @@
         DocDateTypeFacet = '';
         salaryRangeFacet = '';
         FolderTypeFacet = '';
+        ErrorMessageFacet = '';
         document.getElementById("q").focus();
         sortType = 'featured';
 
@@ -122,7 +123,6 @@
             });
 
         Search();
-
         // Execute search if user clicks enter
         $("#q").keyup(function (event) {
             if (event.keyCode == 13) {
@@ -134,11 +134,10 @@
 
     });
 
-    function Search() {        
+    function Search() {
         $("#job_details_div").html("Loading...");
         var q = $("#q").val();
-        if (q == '')
-        {
+        if (q == '') {
             q = '*';
         }
         // Get center of map to use to score the search results
@@ -150,10 +149,8 @@
             SendingPartnerTypeFacet: SendingPartnerTypeFacet,
             ReceivePartnerTypeFacet: ReceivePartnerTypeFacet,
             DocDateTypeFacet: DocDateTypeFacet,
-            
-
             currentPage: currentPage,
-   
+
         },
         function (data) {
             UpdateMessageTypeFacets(data.Facets.MessageType);
@@ -161,18 +158,30 @@
             UpdateReceivePartnerTypeFacets(data.Facets.ReceivePartnerName);
             UpdateDocDateTypeFacets(data.Facets.DocDate);
             UpdateFolderTypeFacets(data.Facets.FolderName);
-
-            
-           
             UpdateJobDetails(data);
             UpdatePagination(data.Count);
-           
+
             UpdateFilterReset();
         });
-
+        SearchErrorMessages();
     }
+    function SearchErrorMessages() {
+        // Get center of map to use to score the search results
+        $.post('/home/errormessagesearch',
+        {
+            ErrorMessageFacet: ErrorMessageFacet,
+            currentPage: currentPage
+        },
+        function (data) {
+            UpdateErrorMessageFacets(data.Facets.FolderName);
+            if (ErrorMessageFacet != '') {
+                isErroMessage = true;
+                UpdateJobDetails(data);
+            }
 
-    function UpdateFilterReset() {        
+        });
+    }
+    function UpdateFilterReset() {
         // This allows users to remove filters
         var htmlString = '';
         if ((MessageTypeFacet != '') || (SendingPartnerTypeFacet != '') || (ReceivePartnerTypeFacet != '') || (DocDateTypeFacet != '') || (FolderTypeFacet != '')) {
@@ -187,8 +196,8 @@
                 htmlString += ReceivePartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ReceivePartnerTypeFacet\')">X</a>]<br>';
             if (DocDateTypeFacet != '')
                 htmlString += DocDateTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'DocDateTypeFacet\')">X</a>]<br>';
-            
-          
+
+
         }
         $("#filterReset").html(htmlString);
     }
@@ -207,7 +216,7 @@
         Search();
     }
 
-   
+
 
     function displayInfobox(e) {
         if (e.targetType == "pushpin") {
@@ -265,8 +274,7 @@
         pinInfobox.setOptions({ visible: false });
     }
 
-    function UpdateZipCode()
-    {
+    function UpdateZipCode() {
         zipCode = $("#zipCode").val();
         Search();
     }
@@ -318,9 +326,22 @@
         $("#FolderType_facets").html(facetResultsHTML);
     }
 
-    function ChooseFolderTypeFacet(facet) {        
+    function ChooseFolderTypeFacet(facet) {
         FolderTypeFacet = facet;
         Search();
+    }
+    function UpdateErrorMessageFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseErrorMessageFacet(\'' + data[i].Value + '\');">' + data[i].Count + '</span></a></li>';
+        }
+
+        $("#ErrorMessage_facets").html(facetResultsHTML);
+    }
+
+    function ChooseErrorMessageFacet(facet) {
+        ErrorMessageFacet = facet;
+        SearchErrorMessages();
     }
 
     function UpdateMessageTypeFacets(data) {
@@ -414,7 +435,7 @@
         Search();
     }
 
-    function UpdateJobDetails(data) {
+    function UpdateJobDetails(data) {        
         var jobDetailsHTML = '';
         var imgCounter = 0;
         var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -431,7 +452,7 @@
             //if (imgCounter == 10)
             //    imgCounter = 0;
             //jobDetailsHTML += '<div class="thumb"><img src="/images/content/bus-0' + imgCounter + '.png" alt=""></div>';
-           // jobDetailsHTML += '<div class="clearfix visible-xs"></div>';
+            // jobDetailsHTML += '<div class="clearfix visible-xs"></div>';
             var postingDate = data.Results[i].Document.DocDate;
 
             var date = new Date(parseInt(postingDate));
@@ -439,7 +460,7 @@
             jobDetailsHTML += '<div class="date">' + date.getDay() + ' <span>' + monthNames[date.getMonth()] + '</span></div>';
 
             //var featuredListing = '';
-           // if (data.Results[0].Document.tags.length > 0)
+            // if (data.Results[0].Document.tags.length > 0)
             //    featuredListing = ' - Featured Job';
 
             var docPath = data.Results[i].Document.Path;
@@ -453,8 +474,14 @@
                 finalName = str[1];
                 finalName2 = str[0];
             }
+            var hdnName = "hdn" + finalName;            
+            var content = '';
+            if (isErroMessage)
+            {
+                content = data.Results[i].Document.ExceptionMessage;
+            }
             //jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
-            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + docPath + '</a></span>';
+            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + docPath + '</a><br/><p>' + content + '</p></span>';
 
             //jobDetailsHTML += '<p class="description"><b>Salary:</b> $' + data.Results[i].Document.salary_range_from.toLocaleString();
             //if (data.Results[i].Document.salary_range_from != data.Results[i].Document.salary_range_to)
@@ -474,11 +501,11 @@
 
         $("#job_details_div").html(jobDetailsHTML);
     }
-    function showDiv(hdnfileName, hdnFoldername, hdnfileName2) {
-        $('#pop').modal('show');        
+    function showDiv(hdnfileName, hdnFoldername, hdnfileName2) {        
+        $('#pop').modal('show'); 
         $("#pop #hdnFilename").val(hdnfileName);
         $("#pop #hdnFilename2").val(hdnfileName2);
-        $("#pop #hdnFoldername").val(hdnFoldername);
+        $("#pop #hdnFoldername").val(hdnFoldername);  
         showHidetabs(1);
     }
     function copy(selector) {
@@ -497,22 +524,21 @@
         $('.btf-tabpanel .e-tabpanel #Editorimage' + id).removeClass('tabnone');
         $('.btf-tabpanel .tabsbar div').removeClass('Addtabblue').addClass('Addtabgray');
         $('.btf-tabpanel .tabsbar #Editortab' + id).removeClass('Addtabgray').addClass('Addtabblue');
-        if (id == 1) {           
+        if (id == 1) {            
             var filename = $("#pop #hdnFilename").val();
             var foldername = $("#pop #hdnFoldername").val();
-            var filename2 = $("#pop #hdnFilename2").val();
-            //viewSpinner(true);
-            $.ajax({
-                type: "GET",
-                data: { "fileName": filename, "folderName": foldername, "fileName2": filename2 },
-                url: '@Url.Action("GetBlobContent", "Home")',
-                success: function (result) {
-                    //viewSpinner(false);                    
-                    if (result != null && result != "") {
-                        $("#pop #txtContent").text(result);                        
-                    }                   
-                }
-            });
+            var filename2 = $("#pop #hdnFilename2").val();            
+                $.ajax({
+                    type: "GET",
+                    data: { "fileName": filename, "folderName": foldername, "fileName2": filename2 },
+                    url: '@Url.Action("GetBlobContent", "Home")',
+                    success: function (result) {
+                        //viewSpinner(false);
+                        if (result != null && result != "") {
+                            $("#pop #txtContent").text(result);
+                        }
+                    }
+                });            
         }
     }
 </script>
@@ -551,6 +577,8 @@
 
                                 <h6>Document Date</h6>
                             <ul class="filter-list" id="DocDate_type_facets"></ul>
+                            <h6>Error Messages</h6>
+                            <ul class="filter-list" id="ErrorMessage_facets"></ul>
 </div>
                     </div>
                 </div>
@@ -591,7 +619,7 @@
                     Content
                     <input type="hidden" id="hdnFilename">
                     <input type="hidden" id="hdnFilename2">
-                    <input type="hidden" id="hdnFoldername">
+                    <input type="hidden" id="hdnFoldername">                   
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

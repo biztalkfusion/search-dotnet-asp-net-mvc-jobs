@@ -993,9 +993,9 @@ span.jobs-count {color: #000;}
 }
 .jobs-item .title a:hover {color: #21bbee;}
 .jobs-item .meta {
-	display: inline-block;
+	/*display: inline-block;*/
 	color: #7a7a7a;
-	margin: 3px 0 5px;
+	margin: 0px 0 5px;
 }
 .jobs-item.compact .meta {margin-bottom: 0;}
 .jobs-item .social-icons {

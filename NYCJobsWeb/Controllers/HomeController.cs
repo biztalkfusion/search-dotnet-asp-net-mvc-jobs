@@ -18,6 +18,7 @@ namespace NYCJobsWeb.Controllers
     public class HomeController : BaseController
     {
         public const string PrefixUrl = "https://kuebixedi.blob.core.windows.net/incomingedi/EDIData/";
+        public const string ErrorMessagePrefixUrl = "/incomingedi/EDIData/";
         private JobsSearch _jobsSearch = new JobsSearch();
 
         // GET: Home
@@ -81,6 +82,44 @@ namespace NYCJobsWeb.Controllers
             };
         }
 
+        public ActionResult ErrorMessageSearch(string ErrorMessageFacet = "",int currentPage = 0)
+        {
+            var folderName = "";
+            // If blank search, assume they want to search everything
+            
+            currentPage = 1;
+            switch (UserId)
+            {
+                case 2:
+                    folderName = "003CLLQ";
+                    break;
+                case 3:
+                    folderName = "003DLSS";
+                    break;
+                case 4:
+                    folderName = "003EXLA";
+                    break;
+                case 5:
+                    folderName = "008SHAF";
+                    break;
+            }
+            if (!string.IsNullOrEmpty(ErrorMessageFacet))
+            {
+                folderName = ErrorMessageFacet;
+            }
+            var response = _jobsSearch.ErrorMessageSearch(currentPage, folderName);
+            if (response == null)
+                return null;
+            return new JsonResult
+            {
+                // ***************************************************************************************************************************
+                // If you get an error here, make sure to check that you updated the SearchServiceName and SearchServiceApiKey in Web.config
+                // ***************************************************************************************************************************
+
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                Data = new NYCJob() { Results = response.Results, Facets = response.Facets, Count = Convert.ToInt32(response.Count) }
+            };
+        }
         [HttpGet]
         public ActionResult Suggest(string term, bool fuzzy = true)
         {
@@ -122,11 +161,12 @@ namespace NYCJobsWeb.Controllers
 
         }
 
-        public JsonResult GetBlobContent(string fileName, string folderName,string fileName2="")
+        public JsonResult GetBlobContent(string fileName, string folderName, string fileName2 = "")
         {
             var jsonResult = "";
+            var searchString = "";
             var fullfilter = PrefixUrl + folderName + "/Inbound/";// + fileName;
-            if(!string.IsNullOrEmpty(fileName2))
+            if (!string.IsNullOrEmpty(fileName2))
             {
                 fullfilter += fileName2 + "_" + fileName;
             }
@@ -134,14 +174,14 @@ namespace NYCJobsWeb.Controllers
             {
                 fullfilter += fileName;
             }
-            var searchString = "metadata_storage_path:\"" + fullfilter + "\"";
-            ISearchIndexClient docdbindexClient = CreateSearchIndexClient();
+            searchString = "metadata_storage_path:\"" + fullfilter + "\"";
             var parameters = new SearchParameters()
             {
                 Select = new[] { "content" },
                 SearchMode = SearchMode.All,
                 QueryType = QueryType.Full
             };
+            ISearchIndexClient docdbindexClient = CreateSearchIndexClient();
             var documentDBResult = docdbindexClient.Documents.Search(searchString, parameters);
             if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
             {

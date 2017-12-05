@@ -14,10 +14,12 @@ namespace NYCJobsWeb
     {
         private static SearchServiceClient _searchClient;
         private static ISearchIndexClient _indexClient;
-       // private static string IndexName = "nycjobs";
+        private static ISearchIndexClient _errorIndexClient;
+        // private static string IndexName = "nycjobs";
         private static string IndexName = "documentdb-index";
         private static ISearchIndexClient _indexZipClient;
         private static string IndexZipCodes = "zipcodes";
+        private static string ErrorIndexName = "edibadmessages-index";
 
         public static string errorMessage;
 
@@ -31,6 +33,7 @@ namespace NYCJobsWeb
                 // Create an HTTP reference to the catalog index
                 _searchClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
                 _indexClient = _searchClient.Indexes.GetClient(IndexName);
+                _errorIndexClient = _searchClient.Indexes.GetClient(ErrorIndexName);
                 _indexZipClient = _searchClient.Indexes.GetClient(IndexZipCodes);
 
             }
@@ -110,6 +113,41 @@ namespace NYCJobsWeb
             return null;
         }
 
+        public DocumentSearchResult ErrorMessageSearch(int currentPage, string folderName)
+        {
+            try
+            {
+                SearchParameters sp = new SearchParameters()
+                {
+                    SearchMode = SearchMode.Any,
+                    Top = 10,
+                    Skip = currentPage - 1,
+                    // Limit results
+                    Select = new List<String>() { "FolderName", "Path","ExceptionMessage", "DocDate" },
+                    // Add count
+                    IncludeTotalResultCount = true,
+                    Facets = new List<String>() { "FolderName" },
+                };
+
+                // Add filtering
+                string filter = null;
+                var searchText = "";
+                if (folderName != "")
+                {                    
+                    filter = "FolderName eq '" + folderName + "'";
+                }               
+
+                sp.Filter = filter;
+
+                return _errorIndexClient.Documents.Search(searchText, sp);
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error querying index: {0}\r\n", ex.Message.ToString());
+            }
+            return null;
+        }
         public DocumentSearchResult Search1(string searchText, string businessTitleFacet, string postingTypeFacet, string salaryRangeFacet,
             string sortType, double lat, double lon, int currentPage, int maxDistance, string maxDistanceLat, string maxDistanceLon)
         {
