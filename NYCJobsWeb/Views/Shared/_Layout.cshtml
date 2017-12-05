@@ -1,4 +1,6 @@
-﻿<!doctype html>
+﻿@using System.Security.Claims;
+@using NYCJobsWeb.Common
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -24,11 +26,20 @@
     <![endif]-->
 </head>
 <body>
+    @functions{
+        public bool isAdmin = false;
+        private string _roleName = string.Empty;
+    }
+    @if (HttpContext.Current.User != null)
+    {
+        var identity = (ClaimsIdentity)HttpContext.Current.User.Identity;        
+        isAdmin = identity.FindFirst("RoleName").Value == NYCJobsWeb.Common.EnumHelper.GetEnumDescription(Enums.RoleType.Admin);
+    }
     <div id="wrapper">
         <header id="header">
             <div class="container header-wrapper">
                 <div class="row">
-            
+
                 </div> <!-- end .header-wrapper .row -->
             </div> <!-- end .header-wrapper .container -->
             <div id="mobile-menu-container" class="container">
@@ -44,11 +55,18 @@
                             <a href="/"><img src="~/images/EDI Insights1.jpg" alt=""></a>
                         </div>
                     </div> <!-- end .logo-wrapper -->
-                    <h1 id="available-jobs-label"></small></h1>
+                    <h1 id="available-jobs-label"></h1>
 
                     <ul class="nav">
                         <li><a href="/">Home</a></li>
-                        <li><a href="/">Documents</a></li>
+                        @if (isAdmin)
+                        {
+                            <li><a href="@Url.Action("Index", "User")">User</a></li>
+                        }
+                        else
+                        {
+                            <li><a href="/">Documents</a></li>
+                        }
                         <li><a href="@Url.Action("LogOff", "Account")">Logout</a></li>
                     </ul>
                 </div> <!-- end .header-nav .container -->
@@ -77,13 +95,13 @@
                                 <ul class="footer-links">
                                     <li><a href="https://Kuebix.com/blog/">Blog</a></li>
                                     <li><a href="https://twitter.com/search?src=typd&q=%23kuebix">Twitter</a></li>
-                                
+
                                 </ul>
                             </div>
                         </div>
                     </div>
 
-                    
+
                 </div>
             </div>
 
@@ -103,6 +121,5 @@
     <script src="~/scripts/jquery.fitvids.js"></script>
     <script src="~/scripts/jquery.inview.min.js"></script>
     <script src="~/scripts/script.js"></script>
-
 </body>
 </html>

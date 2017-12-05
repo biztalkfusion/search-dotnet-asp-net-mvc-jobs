@@ -22,25 +22,26 @@ namespace NYCJobsWeb.Data.Seeder
                 Id = 1,
                 UserId = 1,
                 RoleId = 1
-            },
-            new Entities.UserRole
-            {
-                Id = 2,
-                UserId = 2,
-                RoleId = 2
-            },
-            new Entities.UserRole
-            {
-                Id = 3,
-                UserId = 3,
-                RoleId = 2
-            },
-            new Entities.UserRole
-            {
-                Id = 4,
-                UserId = 4,
-                RoleId = 2
-            });
+            }
+            //new Entities.UserRole
+            //{
+            //    Id = 2,
+            //    UserId = 2,
+            //    RoleId = 2
+            //},
+            //new Entities.UserRole
+            //{
+            //    Id = 3,
+            //    UserId = 3,
+            //    RoleId = 2
+            //},
+            //new Entities.UserRole
+            //{
+            //    Id = 4,
+            //    UserId = 4,
+            //    RoleId = 2
+            //}
+            );
         }
     }
 }

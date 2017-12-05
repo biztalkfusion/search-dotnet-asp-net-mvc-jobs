@@ -198,3 +198,89 @@ textarea {
 	margin: 15px auto 25px;
 }
 span.docs-count {color: #000;}
+
+.mtlink{
+	margin-top: 10px
+}
+.lftL{
+	margin-top: 5px;
+}
+.inputtextBX {
+	border: 1px solid #ccc !important;
+	width: 100% !important;
+	height: 30px;
+	padding: 5px;
+}
+.btn-gray
+{
+    color: #FFF;
+	outline: none;
+	padding: 7px 10px 8px 10px;
+	border: solid 1px #3A3A3A;
+	background-color: #3A3A3A;
+	font-size: 12px;
+	width: 120px;
+	margin: 0px 2px 0px 15px;
+	float: right;
+	font-family: 'Open Sans', sans-serif;
+	font-weight: bold
+}
+
+    .btn-gray:hover,
+    .btn-gray:focus,
+    .btn-gray.focus,
+    .btn-gray:active,
+    .btn-gray.active,
+    .open > .dropdown-toggle.btn-gray
+    {
+        color: #FFF;
+	outline: none;
+	padding: 7px 10px 8px 10px;
+	border: solid 1px #3A3A3A;
+	background-color: #3A3A3A;
+	font-size: 12px;
+	width: 120px;
+	margin: 0px 2px 0px 15px;
+	float: right;
+	font-family: 'Open Sans', sans-serif;
+	opacity: 0.8;
+	font-weight: bold
+    }
+
+.btn-grayD
+{
+    color: #6d6e71;
+	outline: none;
+	margin-right: 15px;
+	padding: 7px 10px 8px 10px;
+	border: solid 1px #6d6e71;
+	background-color: #f0f0f0;
+	font-size: 12px;
+	width: 120px;
+	margin:0px 0px 15px 15px;
+	float: right;
+	font-family: 'Open Sans', sans-serif;
+	font-weight: bold
+}
+
+    .btn-grayD:hover,
+    .btn-grayD:focus,
+    .btn-grayD.focus,
+    .btn-grayD:active,
+    .btn-grayD.active,
+    .open > .dropdown-toggle.btn-grayD
+    {
+        color: #6d6e71;
+	outline: none;
+	margin-right: 15px;
+	padding: 7px 10px 8px 10px;
+	border: solid 1px #6d6e71;
+	background-color: #f2f2f2;
+	font-size: 12px;
+	width: 120px;
+	margin: 0px 0px 15px 15px;
+	float: right;
+	font-family: 'Open Sans', sans-serif;
+	opacity: 0.8;
+	font-weight: bold
+    }

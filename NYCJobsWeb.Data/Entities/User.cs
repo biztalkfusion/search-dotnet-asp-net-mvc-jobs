@@ -14,5 +14,6 @@ namespace NYCJobsWeb.Data.Entities
         public string UserName { get; set; }
         [MaxLength(250)]
         public string Password { get; set; }
+        public string FolderName { get; set; }
     }
 }

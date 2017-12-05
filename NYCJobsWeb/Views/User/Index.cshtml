@@ -1,0 +1,187 @@
+﻿@using NYCJobsWeb.Models;
+@model User
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.10.2.min.js"></script>
+<link rel="stylesheet" href="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.11.4/jquery-ui.min.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+<style>
+    .jsgrid-header-cell
+    {
+        width: 100px;
+        text-align:center
+    }
+</style>
+<div class="container">
+    <div class="row">
+        <div cclass="col-md-12">
+            <div id="dvUserSuccess" style="display: none; min-height: 35px; margin-left: 10px" class="alert alert-success">
+                <span></span>
+            </div>
+            <div id="dvUserError" style="display: none; min-height: 35px; margin-left: 10px" class="alert alert-danger">
+                <span></span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="row mtlink">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                <div class="row" style="margin-left:10px;margin-right:1px;margin-top:10px;">
+                    <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5" style="text-align:right;">
+                        <div class="lftL">User Name</div>
+                    </div>
+                    <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
+                        @Html.HiddenFor(m => m.Id, new { @id = "hdUserId" })
+                        @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", tabindex = 10, rows = "3", @id = "txtUserName", maxlength = "150" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                <div class="row" style="margin-top:10px;">
+                    <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5" style="text-align:right;">
+                        <div class="lftL">Role</div>
+                    </div>
+                    <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
+                        @Html.DropDownList("ddlRole", Model.Roles, "Select Role", new { @style = "height: 35px;" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mtlink">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                <div class="row" style="margin-left:10px;margin-right:1px;margin-top:10px;">
+                    <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5" style="text-align:right;">
+                        <div class="lftL">Password</div>
+                    </div>
+                    <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", tabindex = 10, rows = "3", @id = "txtPassword", maxlength = "10" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                <div class="row" style="margin-top:10px;">
+                    <div class="col-xs-12 col-sm-5 col-md-5 col-lg-5" style="text-align:right;">
+                        <div class="lftL">Folder</div>
+                    </div>
+                    <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7" style="text-align:left;">
+                        @Html.DropDownList("ddlFolder", Model.Folders, "Select Folder", new { @style = "height: 35px;" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-10" style="margin-top: 15px; margin-bottom: 0px;text-align:right;margin-right:10px;">
+                <input class="btn-gray" value="Save" type="button" id="btnSave">
+                <input class="btn-grayD" value="Cancel" type="button" id="btnCancel">
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 15px;margin-bottom:20px;">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div style="border:1px solid #818181; text-align: center; height: 200px; padding-top: 0px;margin-right: 50px;" id="jsGrid">
+                        
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+    <script>
+        $(document).ready(function () {
+            $('#dvUserError,#dvUserSuccess').hide();
+            $("#jsGrid").jsGrid({
+                width: "100%",
+                height: "200px",                
+                paging: true,
+                autoload: true,
+                pageSize: 10,
+
+                controller: {
+                    loadData: function () {
+                        return $.ajax({
+                            type: "GET",
+                            url: "/User/GetUserList"
+                        });
+                    }
+                },
+                fields: [
+                    { name: "UserName", type: "text", width: 100 },
+                    { name: "FolderName", type: "text", width: 100 }
+                ]
+            });
+        });
+        $("#btnSave").click(function () {
+            var userData = {
+                Id: $("#hdUserId").val(),
+                UserName: $("#txtUserName").val(),
+                Password: $("#txtPassword").val(),
+                RoleId: $('#ddlRole option:selected').val(),
+                FolderName: $("#ddlFolder option:selected").text()
+            };
+            $.ajax({
+                type: 'POST',
+                url: "@Url.Action("Index", "User")",
+                data: userData,
+                success: function (userResult) {
+                    if (userResult.IsSuccess) {                        
+                        ClearUserControls();
+                        $("#jsGrid").jsGrid({
+                            width: "100%",
+                            height: "200px",                            
+                            paging: true,
+                            autoload: true,
+                            pageSize: 10,
+
+                            controller: {
+                                loadData: function () {
+                                    return $.ajax({
+                                        type: "GET",
+                                        url: "/User/GetUserList"
+                                        });
+                                }
+                            },
+                            fields: [
+                                { name: "UserName", type: "text", width: 100 ,align: "center"},
+                                { name: "FolderName", type: "text", width: 100, align: "center" }
+                            ]
+                        });
+                        $('#dvUserSuccess').show().find('span').html(userResult.Message);
+                        scrollTop("dvUserSuccess");
+                    } else {
+                        $('#dvUserError').show().find('span').html(userResult.Message);
+                        scrollTop("dvUserError");
+                    }
+                },
+                error: function () {
+                    $('#dvUserSuccess').hide();
+                    $("#dvUserError").show().find('span').html('Error');
+                    scrollTop("dvUserError");
+                }
+            });
+            //}
+            return true;
+        });
+        function scrollTop(divId) {
+            $('html, body').animate({
+                scrollTop: $("#" + divId).offset().top - 180
+            }, 100);
+        }
+        //Method to clear user controls
+        function ClearUserControls() {
+            $('#txtUserName,#txtPassword').val('');
+            $('#hdUserId').val(0);
+            $("#ddlRole").val('');
+            $("#ddlFolder").val('');
+        }
+        $("#btnCancel").click(function () {
+            $('#dvUserError,#dvUserSuccess').hide();
+            ClearUserControls();
+        });
+    </script>
