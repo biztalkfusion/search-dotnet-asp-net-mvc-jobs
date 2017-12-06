@@ -484,7 +484,6 @@
             //    featuredListing = ' - Featured Job';
 
             var docPath = data.Results[i].Document.Path;
-           
             var name = docPath.split('/');
             var folderName = name[3];
             var fName = name[5].split('.');
@@ -505,8 +504,7 @@
                 content = '';
             }
             //jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
-            jobDetailsHTML += '<span class="meta">
-                < a href= "#" class="read-more" data- toggle="modal" data- target="pop" onclick= "showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');" > ' + docPath + '</a > <br /> <p>' + content + '</p></span > ';
+            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + docPath + '</a><br/><p>' + content + '</p></span>';
 
             //jobDetailsHTML += '<p class="description"><b>Salary:</b> $' + data.Results[i].Document.salary_range_from.toLocaleString();
             //if (data.Results[i].Document.salary_range_from != data.Results[i].Document.salary_range_to)
