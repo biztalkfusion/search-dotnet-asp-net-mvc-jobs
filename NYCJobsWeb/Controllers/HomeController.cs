@@ -184,7 +184,7 @@ namespace NYCJobsWeb.Controllers
             var documentDBResult = docdbindexClient.Documents.Search(searchString, parameters);
             if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
             {
-                jsonResult = JsonConvert.SerializeObject(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
+                jsonResult = Convert.ToString(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
             }
             return Json(jsonResult, JsonRequestBehavior.AllowGet);
         }
