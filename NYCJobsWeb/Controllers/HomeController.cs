@@ -48,7 +48,7 @@ namespace NYCJobsWeb.Controllers
                 ReceivePartnerTypeFacet = "";
             if (DocDateTypeFacet == "0")
                 DocDateTypeFacet = "";
-            currentPage = 1;
+            
             switch (UserId)
             {                
                 case 2:
@@ -85,9 +85,8 @@ namespace NYCJobsWeb.Controllers
         public ActionResult ErrorMessageSearch(string ErrorMessageFacet = "",int currentPage = 0)
         {
             var folderName = "";
-            // If blank search, assume they want to search everything
-            
-            currentPage = 1;
+            // If blank search, assume they want to search everything            
+           
             switch (UserId)
             {
                 case 2:

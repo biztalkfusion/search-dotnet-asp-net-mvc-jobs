@@ -91,6 +91,7 @@
 
 <script>
     $(document).ready(function () {
+        currentPage = 1;
         Search();
     });
     var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, FolderTypeFacet, ErrorMessageFacet, sortType, currentPage, zipCode, maxDistance;
@@ -171,17 +172,24 @@
         },
         function (data) {
             UpdateErrorMessageFacets(data.Facets.FolderName);
-            if (ErrorMessageFacet != '' && ErrorMessageFacet!=undefined) {
+            if (ErrorMessageFacet != '' && ErrorMessageFacet != undefined) {
                 isErroMessage = true;
                 UpdateJobDetails(data);
+                UpdatePagination(data.Count);
+                UpdateFilterReset();
+                scrollTop("filterReset");
             }
-
         });
     }
-    function UpdateFilterReset() {        
+    function scrollTop(divId) {
+        $('html, body').animate({
+            scrollTop: $("#" + divId).offset().top - 180
+        }, 100);
+    }
+    function UpdateFilterReset() {
         // This allows users to remove filters
         var htmlString = '';
-        if ((MessageTypeFacet != '' && MessageTypeFacet != undefined) || (SendingPartnerTypeFacet != '' && SendingPartnerTypeFacet != undefined) || (ReceivePartnerTypeFacet != '' && ReceivePartnerTypeFacet != undefined) || (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) || (FolderTypeFacet != '' && FolderTypeFacet != undefined)) {
+        if ((MessageTypeFacet != '' && MessageTypeFacet != undefined) || (SendingPartnerTypeFacet != '' && SendingPartnerTypeFacet != undefined) || (ReceivePartnerTypeFacet != '' && ReceivePartnerTypeFacet != undefined) || (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) || (FolderTypeFacet != '' && FolderTypeFacet != undefined) || ErrorMessageFacet != '' && ErrorMessageFacet != undefined) {
             htmlString += '<b>Current Filters:</b><br>';
             if (FolderTypeFacet != '' && FolderTypeFacet != undefined) {
                 htmlString += FolderTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'FolderTypeFacet\')">X</a>]<br>';
@@ -198,7 +206,9 @@
             if (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) {
                 htmlString += DocDateTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'DocDateTypeFacet\')">X</a>]<br>';
             }
-
+            if (ErrorMessageFacet != '' && ErrorMessageFacet != undefined) {
+                htmlString += ErrorMessageFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ErrorMessageFacet\')">X</a>]<br>';
+            }
 
         }
         $("#filterReset").html(htmlString);
@@ -216,7 +226,9 @@
             ReceivePartnerTypeFacet = '';
         if (facet == "DocDateTypeFacet")
             DocDateTypeFacet = '';
-
+        if (facet == "ErrorMessageFacet")
+            ErrorMessageFacet = '';
+        currentPage = 1;
         Search();
     }
 
@@ -318,7 +330,11 @@
 
     function GoToPage(page) {
         currentPage = page;
-        Search();
+        if (ErrorMessageFacet != '' && ErrorMessageFacet != undefined)
+        { SearchErrorMessages(); }
+        else {
+            Search();
+        }
     }
 
     function UpdateFolderTypeFacets(data) {
@@ -337,7 +353,7 @@
     function UpdateErrorMessageFacets(data) {
         var facetResultsHTML = '';
         for (var i = 0; i < data.length; i++) {
-            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseErrorMessageFacet(\'' + data[i].Value + '\');">' + data[i].Count + '</span></a></li>';
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseErrorMessageFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
         }
 
         $("#ErrorMessage_facets").html(facetResultsHTML);
@@ -483,6 +499,9 @@
             if (isErroMessage!=undefined && isErroMessage == true)
             {
                 content = data.Results[i].Document.ExceptionMessage;
+            }
+            if (content == undefined) {
+                content = '';
             }
             //jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
             jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + docPath + '</a><br/><p>' + content + '</p></span>';
