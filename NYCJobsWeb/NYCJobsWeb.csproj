@@ -205,6 +205,7 @@
     <Content Include="Scripts\jquery.ba-outside-events.min.js" />
     <Content Include="Scripts\jquery.fitvids.js" />
     <Content Include="Scripts\jquery.flexslider-min.js" />
+    <Content Include="Scripts\jQuery.highlight.js" />
     <Content Include="Scripts\jquery.inview.min.js" />
     <Content Include="Scripts\jquery.responsive-tabs.js" />
     <Content Include="Scripts\maplace.min.js" />
