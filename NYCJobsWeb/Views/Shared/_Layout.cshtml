@@ -1,4 +1,6 @@
-﻿<!doctype html>
+﻿@using System.Security.Claims;
+@using NYCJobsWeb.Common
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -24,6 +26,15 @@
     <![endif]-->
 </head>
 <body>
+    @functions{
+        public bool isAdmin = false;
+        private string _roleName = string.Empty;
+    }
+    @if (HttpContext.Current.User != null)
+    {
+        var identity = (ClaimsIdentity)HttpContext.Current.User.Identity;        
+        isAdmin = identity.FindFirst("RoleName").Value == NYCJobsWeb.Common.EnumHelper.GetEnumDescription(Enums.RoleType.Admin);
+    }
     <div id="wrapper">
         <header id="header">
             <div class="container header-wrapper">
@@ -44,11 +55,18 @@
                             <a href="/"><img src="~/images/EDI Insights1.jpg" alt=""></a>
                         </div>
                     </div> <!-- end .logo-wrapper -->
-                    <h1 id="available-jobs-label"></small></h1>
+                    <h1 id="available-jobs-label"></h1>
 
                     <ul class="nav">
                         <li><a href="/">Home</a></li>
-                        <li><a href="/">Documents</a></li>
+                        @if (isAdmin)
+                        {
+                            <li><a href="@Url.Action("Index", "User")">User</a></li>
+                        }
+                        else
+                        {
+                            <li><a href="/">Documents</a></li>
+                        }
                         <li><a href="@Url.Action("LogOff", "Account")">Logout</a></li>
                     </ul>
                 </div> <!-- end .header-nav .container -->

@@ -45,7 +45,7 @@ namespace NYCJobsWeb.Controllers
 
             if (userdetails != null && userdetails.Id > 0)
             {
-                CreateCookie(new Login() { Id = userdetails.Id, UserName = userdetails.UserName, RoleId = userdetails.RoleId });
+                CreateCookie(new Login() { Id = userdetails.Id, UserName = userdetails.UserName, RoleId = userdetails.RoleId,RoleName=userdetails.RoleName });
                 return RedirectToAction("Index", "Home");
             }
 
@@ -56,7 +56,7 @@ namespace NYCJobsWeb.Controllers
         {
             var authCookie = CreateAuthCookie(userInfo);
             Response.AppendCookie(authCookie);
-            var identity = new Common.CommonUtilities().SetIdentity(userInfo);
+            var identity = new CommonUtilities().SetIdentity(userInfo);
             IPrincipal Identity = (IPrincipal)identity;
             ControllerContext.HttpContext.User = Identity;
         }

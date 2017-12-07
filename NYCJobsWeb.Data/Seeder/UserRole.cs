@@ -40,7 +40,14 @@ namespace NYCJobsWeb.Data.Seeder
                 Id = 4,
                 UserId = 4,
                 RoleId = 2
-            });
+            },
+            new Entities.UserRole
+            {
+                Id = 5,
+                UserId = 5,
+                RoleId = 2
+            }
+            );
         }
     }
 }

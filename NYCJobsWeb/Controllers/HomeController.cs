@@ -3,6 +3,7 @@ using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Newtonsoft.Json;
 using NYCJobsWeb.Attributes;
+using NYCJobsWeb.Client;
 using NYCJobsWeb.Models;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace NYCJobsWeb.Controllers
         public const string PrefixUrl = "https://kuebixedi.blob.core.windows.net/incomingedi/EDIData/";
         public const string ErrorMessagePrefixUrl = "/incomingedi/EDIData/";
         private JobsSearch _jobsSearch = new JobsSearch();
+        private readonly UserClient _userClient=new UserClient();
 
         // GET: Home
         public ActionResult Index()
@@ -48,21 +50,11 @@ namespace NYCJobsWeb.Controllers
                 ReceivePartnerTypeFacet = "";
             if (DocDateTypeFacet == "0")
                 DocDateTypeFacet = "";
-            
-            switch (UserId)
-            {                
-                case 2:
-                    folderName = "003CLLQ";
-                    break;
-                case 3:
-                    folderName = "003DLSS";
-                    break;
-                case 4:
-                    folderName = "003EXLA";
-                    break;
-                case 5:
-                    folderName = "008SHAF";
-                    break;
+                       
+            var userDetails = _userClient.GetUserDetails(UserId);
+            if(userDetails!=null && !string.IsNullOrEmpty(userDetails.FolderName))
+            {
+                folderName = userDetails.FolderName;
             }
             if (!string.IsNullOrEmpty(FolderTypeFacet))
             {
@@ -85,22 +77,13 @@ namespace NYCJobsWeb.Controllers
         public ActionResult ErrorMessageSearch(string ErrorMessageFacet = "",int currentPage = 0)
         {
             var folderName = "";
-            // If blank search, assume they want to search everything            
-           
-            switch (UserId)
+            // If blank search, assume they want to search everything
+            
+                        
+            var userDetails = _userClient.GetUserDetails(UserId);
+            if (userDetails != null)
             {
-                case 2:
-                    folderName = "003CLLQ";
-                    break;
-                case 3:
-                    folderName = "003DLSS";
-                    break;
-                case 4:
-                    folderName = "003EXLA";
-                    break;
-                case 5:
-                    folderName = "008SHAF";
-                    break;
+                folderName = userDetails.FolderName;
             }
             if (!string.IsNullOrEmpty(ErrorMessageFacet))
             {

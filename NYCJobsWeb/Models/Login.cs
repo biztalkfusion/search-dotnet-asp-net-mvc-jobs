@@ -15,6 +15,7 @@ namespace NYCJobsWeb.Models
         public string Password { get; set; }
 
         public long RoleId { get; set; }
+        public string RoleName { get; set; }
         public string ErrorMessage { get; set; }
         public bool IsLoginFailed { get; set; }
         public string WebToken { get; set; }

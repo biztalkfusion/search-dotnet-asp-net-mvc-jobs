@@ -29,6 +29,7 @@ namespace NYCJobsWeb.Client
                     userdetails.RoleId = userRole?.RoleId ?? 0;
                     userdetails.UserName = user.UserName;
                     userdetails.Id = user.Id;
+                    userdetails.RoleName = userRole.Role.Name;
                 }
                 return userdetails;
             }
