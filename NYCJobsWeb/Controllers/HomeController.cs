@@ -168,6 +168,11 @@ namespace NYCJobsWeb.Controllers
             if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
             {
                 jsonResult = Convert.ToString(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
+                if(jsonResult.IndexOf("\r\n")==-1)
+                {
+                    jsonResult = jsonResult.Replace("~", "~\r\n");
+                }
+                
             }
             return Json(jsonResult, JsonRequestBehavior.AllowGet);
         }
