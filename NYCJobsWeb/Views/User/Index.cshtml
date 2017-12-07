@@ -233,7 +233,11 @@
             ValidationMessageShowHide(txtUserName, 'lblValidateUserName', 'User Name is required.');
             ValidationMessageShowHide(txtPassword, 'lblValidatePassword', 'Password is required.');
             ValidationMessageShowHide(role, 'lblValidateRole', 'Role is required.');
-            ValidationMessageShowHide(folder, 'lblValidateFolder','Folder is required.');
+            if (role == "2")
+            {
+                ValidationMessageShowHide(folder, 'lblValidateFolder', 'Folder is required.');
+            }
+            
             return errorFlag;
         }
 
