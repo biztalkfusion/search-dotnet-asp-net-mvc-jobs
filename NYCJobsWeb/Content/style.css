@@ -1155,4 +1155,5 @@ span.jobs-count {color: #000;}
 #q1 {
 	margin-bottom: 10px;
 	width:100%;
+    max-width:100%;
 }

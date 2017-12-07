@@ -183,5 +183,35 @@ namespace NYCJobsWeb.Controllers
             SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "azureblob-index", new SearchCredentials(queryApiKey));
             return indexClient;
         }
+        public JsonResult GetJsonContent(string fileName, string fileName2 = "")
+        {
+            var jsonResult = "";
+            var fullfilter = "";
+            var searchString = "";            
+            if (!string.IsNullOrEmpty(fileName2))
+            {
+                fullfilter += fileName2 + "_" + fileName;
+            }
+            else
+            {
+                fullfilter += fileName;
+            }           
+            ISearchIndexClient docdbindexClient = CreateDocDBSearchIndexClient();
+            SearchParameters sp = new SearchParameters() { Select = new List<String>() { "x12_00401" }, SearchMode = SearchMode.All };            
+            var documentDBResult = docdbindexClient.Documents.Search(fullfilter, sp);
+            if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
+            {
+                jsonResult = Convert.ToString(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
+            }
+            return Json(jsonResult, JsonRequestBehavior.AllowGet);
+        }
+        private static SearchIndexClient CreateDocDBSearchIndexClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceblobApiKey"];
+
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "documentdb-index", new SearchCredentials(queryApiKey));            
+            return indexClient;
+        }
     }
 }

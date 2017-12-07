@@ -183,9 +183,11 @@
     <Content Include="Images\search.png" />
     <Content Include="Images\title-bg.png" />
     <Content Include="Images\transparent.png" />
+    <Content Include="Scripts\ace.js" />
     <Content Include="Scripts\bootstrap-tour-standalone.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\ext-language_tools.js" />
     <Content Include="Scripts\jquery-1.11.0.min.js" />
     <Content Include="Fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="Fonts\glyphicons-halflings-regular.woff" />
@@ -210,8 +212,11 @@
     <Content Include="Scripts\jquery.responsive-tabs.js" />
     <Content Include="Scripts\maplace.min.js" />
     <Content Include="Scripts\media.match.min.js" />
+    <Content Include="Scripts\mode-json.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\script.js" />
+    <Content Include="Scripts\theme-eclipse.js" />
+    <Content Include="Scripts\worker-json.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

@@ -8,6 +8,8 @@
 <link href="~/Content/bootstrap-tour-standalone.min.css" rel="stylesheet" />
 <script src="~/Scripts/bootstrap.js"></script>
 <script src="~/Scripts/jQuery.highlight.js"></script>
+<link href="~/Content/Site.css" rel="stylesheet" />
+<script src="@Url.Content("~/Scripts/ace.js")" type="text/javascript"></script>
 <script>
     $(function () {
         $("#q").autocomplete({
@@ -94,7 +96,7 @@
     $(document).ready(function () {
         currentPage = 1;
         Search();
-        $('#ftpName').text('@NYCJobsWeb.Common.Settings.FTPName');        
+        $('#ftpName').text('@NYCJobsWeb.Common.Settings.FTPName');
     });
     var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, FolderTypeFacet, ErrorMessageFacet, sortType, currentPage, zipCode, maxDistance;
     var map = null;
@@ -531,6 +533,7 @@
         $("#pop #hdnFilename").val(hdnfileName);
         $("#pop #hdnFilename2").val(hdnfileName2);
         $("#pop #hdnFoldername").val(hdnFoldername);
+       //// $("#pop #hdnJson").val(hdnContentId);
         showHidetabs(1);
     }
     function copy(selector) {
@@ -565,11 +568,46 @@
                 }
             });
         }
+        else if(id == 2)
+        {
+            var filename = $("#pop #hdnFilename").val();
+            var filename2 = $("#pop #hdnFilename2").val();
+            //Replace existing one with new to reset/clear
+            $('#aceEditor').replaceWith('<div id="aceEditor" style="width: 475px;min-height:50px;"></div>');
+            $.ajax({
+                type: "GET",
+                data: { "fileName": filename, "fileName2": filename2 },
+                url: '@Url.Action("GetJsonContent", "Home")',
+                success: function (result) {
+                    //viewSpinner(false);
+                    if (result != null && result != "") {
+                        // Settings for Ace editor initiation//
+                        var editor = ace.edit('aceEditor');
+                        editor.setOptions({
+                            autoScrollEditorIntoView: true,
+                            maxLines: 8
+                        });
+                        editor.session.setMode("ace/mode/json");
+                        editor.renderer.setScrollMargin(10, 10, 10, 10);
+                        $('#btnAceCopy').prop('disabled', true);
+                        if (result != null && result != "") {
+                            editor.getSession().setMode("ace/mode/json");
+                            editor.getSession().setUseWrapMode(true);
+                            editor.getSession().setTabSize(2);
+                            editor.setValue(JSON.stringify(JSON.parse(result), null, '\t'));
+                            editor.clearSelection();
+                            $('#btnAceCopy').prop('disabled', false);
+                        }
+                        editor.setReadOnly(true);
+                    }
+                }
+            });
+        }
     }
-    
+
     function SearchWord()
-    {        
-        $('#pop #txtContent').unhighlight({ element: 'span', className: 'ht' });       
+    {
+        $('#pop #txtContent').unhighlight({ element: 'span', className: 'ht' });
         var searchString = $("#pop #q1").val();
         $('#pop #txtContent').highlight(searchString, {
             color: 'black',
@@ -579,6 +617,17 @@
             bold: false,
             class: "ht"
         });
+    }
+    function aceEditorcopy(selector) {
+        var editor = ace.edit("aceEditor");
+        var $temp = $("<div>");
+        $(".modal-body").append($temp);
+        $temp.attr("contenteditable", true)
+             .html(editor.getValue()).select()
+             .on("focus", function () { document.execCommand('selectAll', false, null) })
+             .focus();
+        document.execCommand("copy");
+        $temp.remove();
     }
 </script>
 <div class="row">
@@ -593,7 +642,7 @@
                                 <div class="widget-content clearfix">
                                     <div id="remote">
                                         <input class="form-control walkthrough-1" type="text" id="q" placeholder="Search Documents">
-                                        <input type="submit" class="search-submit" value="" onclick="Search();">
+                                        <input type="submit" class="search-submit" style="margin-right: 22px;" value="" onclick="Search();">
                                     </div>
                                 </div>
                             </div>
@@ -664,15 +713,14 @@
                                             <div id="Editortab1" class="Addtabblue" onclick="showHidetabs(1);">
                                                 EDI
                                             </div>
-                                            @*<div id="Editortab2" class="Addtabgray" onclick="showHidetabs(2);">
-                                                    Json
-                                                </div>*@
+                                            <div id="Editortab2" class="Addtabgray" onclick="showHidetabs(2);">
+                                                Json
+                                            </div>
                                         </div>
                                         <div class="e-tabpanel">
                                             <!------------------ Type Details Tab One  ------------------>
                                             <div id="Editorimage1" class="Addtabmain" style="line-height: 24px;">
                                                 <div class="widget sidebar-widget jobs-search-widget" style="margin-bottom:5px;">
-                                                    @*<h5 class="widget-title" id="title">Search</h5>*@
                                                     <div class="widget-content clearfix">
                                                         <div id="remote" style="width:88%">
                                                             <input class="form-control walkthrough-1" type="text" id="q1" placeholder="Search">
@@ -685,7 +733,6 @@
                                                         <div class="row">
                                                             <div class="col-md-11" style="width: 88.667%;">
                                                                 <div id="txtContent" style="max-width:650px;max-height:200px;overflow-y: scroll;border: 1px solid #e6e6e6;border-radius: 3px;"></div>
-                                                                @*<textarea cols="100" rows="7" id="txtContent" style="max-width:500px;" readonly></textarea>*@
                                                             </div>
                                                             <div class="col-md-1" style="padding-left: 0px;">
                                                                 <button onclick="copy('#txtContent')">Copy</button>
@@ -698,12 +745,12 @@
                                                 <div class="row">
                                                     <div class="col-lg-12">
                                                         <div class="row">
-                                                            @*<div class="col-md-9">
-                                                                    <div id="aceEditor" style="width: 475px;min-height:50px;"></div>
-                                                                </div>
-                                                                <div class="col-md-3" style="padding-left: 90px;">
-                                                                    <button id="btnAceCopy" onclick="aceEditorcopy('#aceEditor')">Copy</button>
-                                                                </div>*@
+                                                            <div class="col-md-9">
+                                                                <div id="aceEditor" style="width: 475px;min-height:50px;"></div>
+                                                            </div>
+                                                            <div class="col-md-3" style="padding-left: 90px;">
+                                                                <button id="btnAceCopy" onclick="aceEditorcopy('#aceEditor')">Copy</button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
