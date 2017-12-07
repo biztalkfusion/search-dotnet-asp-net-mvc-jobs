@@ -20,12 +20,19 @@ namespace NYCJobsWeb.Models
 
         [Required]
         public string FolderName { get; set; }
-
+        public int FolderId { get; set; }
         [Required]
         public string Role { get; set; }
         public long RoleId { get; set; }
         public string RoleName { get; set; }
         public IList<SelectListItem> Folders { get; set; }
         public IList<SelectListItem> Roles { get; set; }
+        public IList<Folder> FolderItems { get; set; }
+    }
+
+    public class Folder
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

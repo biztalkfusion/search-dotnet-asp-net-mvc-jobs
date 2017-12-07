@@ -18,53 +18,88 @@ namespace NYCJobsWeb.Client
         public Result SaveUserDetails(User userViewModel)
         {            
             var result = new Result();
-            if (_searchContext.Users.Any(t => t.UserName.Equals(userViewModel.UserName)))
+            if (userViewModel.Id == 0)
             {
-                result.IsSuccess = false;
-                result.Message = "User Name already exists";
+                if (_searchContext.Users.Any(t => t.UserName.Equals(userViewModel.UserName)))
+                {
+                    result.IsSuccess = false;
+                    result.Message = "User Name already exists";
+                }
+                else
+                {
+                    userViewModel.UserName = userViewModel.UserName.Trim();
+                    userViewModel.Password = userViewModel.Password.Trim();
+                    userViewModel.RoleId = userViewModel.RoleId;
+                    userViewModel.FolderName = userViewModel.FolderName.Trim();
+                    using (var scope = new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted }))
+                    {
+                        try
+                        {
+                            var user = new Data.Entities.User()
+                            {
+                                UserName = userViewModel.UserName,
+                                Password = Common.SecurityUtilities.EncryptUrl(userViewModel.Password, Common.Settings.EncSecretkey),
+                                FolderName = userViewModel.FolderName
+                            };
+                            _searchContext.Users.Add(user);
+                            _searchContext.SaveChanges();
+
+                            var userRole = new Data.Entities.UserRole()
+                            {
+                                UserId = user.Id,
+                                RoleId = userViewModel.RoleId
+                            };
+                            _searchContext.UserRoles.Add(userRole);
+
+                            _searchContext.SaveChanges();
+                            scope.Complete();
+                            userViewModel.Id = user.Id;
+                            userViewModel.RoleId = userRole.RoleId;
+                            result.IsSuccess = true;
+                            result.Message = "User saved successfully";
+                        }
+                        catch (Exception ex)
+                        {
+                            result.IsSuccess = false;
+                            scope.Dispose();
+                            result.Message = string.IsNullOrEmpty(result.Message) ? ex.Message : "Error while saving user details";
+                        }
+                    }
+                }
             }
             else
             {
-                userViewModel.UserName = userViewModel.UserName.Trim();
-                userViewModel.Password = userViewModel.Password.Trim();
-                userViewModel.RoleId = userViewModel.RoleId;
-                userViewModel.FolderName = userViewModel.FolderName.Trim();
-                using (var scope = new TransactionScope(TransactionScopeOption.Required,
-                new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted }))
+                var user = _searchContext.Users.FirstOrDefault(_ => _.Id == userViewModel.Id);
+                if (user != null)
                 {
-                    try
+                    using (var scope = new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted }))
                     {
-                        var user = new Data.Entities.User()
+                        try
                         {
-                            UserName = userViewModel.UserName,
-                            Password = Common.SecurityUtilities.EncryptUrl(userViewModel.Password, Common.Settings.EncSecretkey), 
-                            FolderName = userViewModel.FolderName
-                        };
-                        _searchContext.Users.Add(user);
-                        _searchContext.SaveChanges();
+                            var userRole = _searchContext.UserRoles.FirstOrDefault(_ => _.UserId == user.Id);
+                            userRole.RoleId = userViewModel?.RoleId ?? 0; 
 
-                        var userRole = new Data.Entities.UserRole()
+                            user.UserName = userViewModel.UserName;
+                            user.Id = userViewModel.Id;
+                            user.FolderName = userViewModel.FolderName;
+                            user.Password = userViewModel.Password;
+
+                            _searchContext.SaveChanges();
+                            scope.Complete();
+                            result.IsSuccess = true;
+                            result.Message = "User saved successfully";
+                        }
+                        catch (Exception ex)
                         {
-                            UserId = user.Id,
-                            RoleId = userViewModel.RoleId
-                        };
-                        _searchContext.UserRoles.Add(userRole);
-                        //etc add your other classes
-                        _searchContext.SaveChanges();
-                        scope.Complete();
-                        userViewModel.Id = user.Id;
-                        userViewModel.RoleId = userRole.RoleId;
-                        result.IsSuccess = true;
-                        result.Message = "User saved successfully";
-                    }
-                    catch (Exception ex)
-                    {
-                        result.IsSuccess = false;
-                        scope.Dispose();
-                        result.Message = string.IsNullOrEmpty(result.Message) ? ex.Message : "Error while saving user details";                       
+                            result.IsSuccess = false;
+                            scope.Dispose();
+                            result.Message = string.IsNullOrEmpty(result.Message) ? ex.Message : "Error while saving user details";
+                        }
                     }
                 }
-            }            
+            }
             return result;
         }
 
@@ -83,7 +118,8 @@ namespace NYCJobsWeb.Client
                                             UserName = user.UserName,
                                             RoleName = role.Name,
                                             RoleId=role.Id,
-                                            FolderName = user.FolderName
+                                            FolderName = user.FolderName,
+                                            Password=user.Password
                                         }).ToList();
                 
                 if (userDetailsQuery.Any())
@@ -114,6 +150,7 @@ namespace NYCJobsWeb.Client
                     userdetails.Id = user.Id;
                     userdetails.RoleName = userRole.Role.Name;
                     userdetails.FolderName = user.FolderName;
+                    userdetails.Password = user.Password;
                 }
                 return userdetails;
             }

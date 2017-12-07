@@ -24,6 +24,7 @@ namespace NYCJobsWeb.Controllers
             var user = new User();
             user.Folders = GetFolderList();
             user.Roles = GetRolesList();
+            user.FolderItems = GetFolderItemsList();
             return View(user);
         }
 
@@ -33,10 +34,10 @@ namespace NYCJobsWeb.Controllers
             if (userDetails != null)
             {
                 var users = new Result();
-                if (userDetails.Id == 0)
-                {
+                //if (userDetails.Id == 0)
+                //{
                     users = _userClient.SaveUserDetails(userDetails);
-                }
+                //}
                 if (users != null)
                 {
                     return Json(users, JsonRequestBehavior.AllowGet);
@@ -66,6 +67,16 @@ namespace NYCJobsWeb.Controllers
             var totals = new long[1];
             var userList = _userClient.GetUserList(totals, UserId);            
             return Json(userList, JsonRequestBehavior.AllowGet);
+        }
+
+        public IList<Folder> GetFolderItemsList()
+        {
+            var folderList = new List<Folder>();
+            folderList.Add(new Folder { Name = "003CLLQ", Id = 1 });
+            folderList.Add(new Folder { Name = "003DLSS", Id = 2 });
+            folderList.Add(new Folder { Name = "003EXLA", Id = 3 });
+            folderList.Add(new Folder { Name = "008SHAF", Id = 4 });
+            return folderList;
         }
     }
 }

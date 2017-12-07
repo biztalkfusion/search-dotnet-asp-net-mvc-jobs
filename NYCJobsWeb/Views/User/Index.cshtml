@@ -17,6 +17,11 @@
         width: 100px;
         text-align:center
     }
+       .require {
+    color: Red;
+    font-size: 14px;
+    margin: 0;
+}
 </style>
 
 <div class="container">
@@ -40,6 +45,7 @@
                     <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
                         @Html.HiddenFor(m => m.Id, new { @id = "hdUserId" })
                         @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", tabindex = 10, rows = "3", @id = "txtUserName", maxlength = "150" })
+                        <div id="lblValidateUserName" class="require"></div>
                     </div>
                 </div>
             </div>
@@ -50,6 +56,7 @@
                     </div>
                     <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
                         @Html.DropDownList("ddlRole", Model.Roles, "Select Role", new { @style = "height: 35px;" })
+                        <div id="lblValidateRole" class="require"></div>
                     </div>
                 </div>
             </div>
@@ -63,6 +70,7 @@
                     </div>
                     <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
                         @Html.PasswordFor(m => m.Password, new { @class = "form-control", tabindex = 10, rows = "3", @id = "txtPassword", maxlength = "10" })
+                        <div id="lblValidatePassword" class="require"></div>
                     </div>
                 </div>
             </div>
@@ -73,6 +81,7 @@
                     </div>
                     <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7" style="text-align:left;">
                         @Html.DropDownList("ddlFolder", Model.Folders, "Select Folder", new { @style = "height: 35px;" })
+                        <div id="lblValidateFolder" class="require"></div>
                     </div>
                 </div>
             </div>
@@ -99,11 +108,13 @@
             $('#dvUserError,#dvUserSuccess').hide();
             $("#jsGrid").jsGrid({
                 width: "100%",
-                height: "200px",                
-                paging: true,
+                height: "200px",
+                paging: true,                
                 autoload: true,
                 pageSize: 10,
-
+                rowClick: function(args) {
+                    editDetails("Edit", args.item);
+                },
                 controller: {
                     loadData: function () {
                         return $.ajax({
@@ -113,12 +124,19 @@
                     }
                 },
                 fields: [
-                    { name: "UserName", type: "text", width: 100 },
-                    { name: "FolderName", type: "text", width: 100 }
+                    { name: "UserName", type: "text", width: 100 },                   
+                    { name: "FolderName", type: "text", width: 100 },
+                    { name: "Id", type: "text", width: 0, align: "center", visible: false },                    
+                    { name: "RoleId", type: "text", width: 0, align: "center", visible: false },
+                    { name: "Password", type: "text", width: 0, align: "center", visible: false }                   
                 ]
             });
+            
         });
+        
         $("#btnSave").click(function () {
+            $('#dvUserError,#dvUserSuccess').hide();
+            if (Validation()) {
             var userData = {
                 Id: $("#hdUserId").val(),
                 UserName: $("#txtUserName").val(),
@@ -131,15 +149,17 @@
                 url: "@Url.Action("Index", "User")",
                 data: userData,
                 success: function (userResult) {
-                    if (userResult.IsSuccess) {                        
+                    if (userResult.IsSuccess) {
                         ClearUserControls();
                         $("#jsGrid").jsGrid({
                             width: "100%",
-                            height: "200px",                            
+                            height: "200px",
                             paging: true,
                             autoload: true,
                             pageSize: 10,
-
+                            rowClick: function (args) {
+                                editDetails("Edit", args.item);
+                            },
                             controller: {
                                 loadData: function () {
                                     return $.ajax({
@@ -150,7 +170,10 @@
                             },
                             fields: [
                                 { name: "UserName", type: "text", width: 100 ,align: "center"},
-                                { name: "FolderName", type: "text", width: 100, align: "center" }
+                                { name: "FolderName", type: "text", width: 100, align: "center" },
+                                { name: "Id", type: "text", width: 0, align: "center", visible: false },
+                                { name: "RoleId", type: "text", width: 0, align: "center", visible: false },
+                                { name: "Password", type: "text", width: 0, align: "center", visible: false }
                             ]
                         });
                         $('#dvUserSuccess').show().find('span').html(userResult.Message);
@@ -166,9 +189,23 @@
                     scrollTop("dvUserError");
                 }
             });
-            //}
+            }
             return true;
         });
+
+        function editDetails(dialogType, client)
+        {
+            
+            $('#hdUserId').val(client.Id);
+            $("#txtUserName").val(client.UserName);
+            $("#txtPassword").val(client.Password);
+            $("#txtPassword").prop("readonly", true);
+            $("#ddlRole").val(client.RoleId);            
+            $("#ddlFolder option").filter(function () {
+                return this.text == client.FolderName;
+            }).attr('selected', true);
+            
+         }
         function scrollTop(divId) {
             $('html, body').animate({
                 scrollTop: $("#" + divId).offset().top - 180
@@ -177,6 +214,7 @@
         //Method to clear user controls
         function ClearUserControls() {
             $('#txtUserName,#txtPassword').val('');
+            $("#txtPassword").prop("readonly", false);
             $('#hdUserId').val(0);
             $("#ddlRole").val('');
             $("#ddlFolder").val('');
@@ -185,4 +223,28 @@
             $('#dvUserError,#dvUserSuccess').hide();
             ClearUserControls();
         });
+        var errorFlag;
+        function Validation() {
+            errorFlag = true;
+            var txtUserName = $('#txtUserName').val().trim();
+            var txtPassword = $('#txtPassword').val().trim();
+            var role = $('#ddlRole').val().trim();
+            var folder = $('#ddlFolder').val().trim();
+            ValidationMessageShowHide(txtUserName, 'lblValidateUserName', 'User Name is required.');
+            ValidationMessageShowHide(txtPassword, 'lblValidatePassword', 'Password is required.');
+            ValidationMessageShowHide(role, 'lblValidateRole', 'Role is required.');
+            ValidationMessageShowHide(folder, 'lblValidateFolder','Folder is required.');
+            return errorFlag;
+        }
+
+        function ValidationMessageShowHide(value, controlId, message) {
+            if (value) {
+                $('#' + controlId).empty().hide();
+            } else {
+                if (errorFlag) {
+                    errorFlag = false;
+                }
+                $('#' + controlId).show().text(message);
+            }
+        }
     </script>
