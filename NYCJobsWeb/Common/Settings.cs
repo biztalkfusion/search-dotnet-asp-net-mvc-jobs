@@ -14,5 +14,10 @@ namespace NYCJobsWeb.Common
             get { return ConfigurationManager.AppSettings["EncSecretkey"]; }
 
         }
+        public static string FTPName
+        {
+            get { return ConfigurationManager.AppSettings["FTP"]; }
+
+        }
     }
 }

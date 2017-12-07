@@ -93,6 +93,7 @@
     $(document).ready(function () {
         currentPage = 1;
         Search();
+        $('#ftpName').text('@NYCJobsWeb.Common.Settings.FTPName');
     });
     var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, FolderTypeFacet, ErrorMessageFacet, sortType, currentPage, zipCode, maxDistance;
     var map = null;
@@ -455,7 +456,7 @@
         Search();
     }
 
-    function UpdateJobDetails(data) {        
+    function UpdateJobDetails(data) {
         var jobDetailsHTML = '';
         var imgCounter = 0;
         var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -485,6 +486,7 @@
 
             var docPath = data.Results[i].Document.Path;
             var name = docPath.split('/');
+            var newDocPath = name[3] + "/" + name[4] + "/" + name[5];
             var folderName = name[3];
             var fName = name[5].split('.');
             var finalName = fName[0];
@@ -494,17 +496,16 @@
                 finalName = str[1];
                 finalName2 = str[0];
             }
-            var hdnName = "hdn" + finalName;            
+            var hdnName = "hdn" + finalName;
             var content = '';
-            if (isErroMessage!=undefined && isErroMessage == true)
-            {
+            if (isErroMessage != undefined && isErroMessage == true) {
                 content = data.Results[i].Document.ExceptionMessage;
             }
             if (content == undefined) {
                 content = '';
             }
             //jobDetailsHTML += '<h6 class="title"><a href="/home/jobdetails?id=' + data.Results[i].Document.id + '">' + data.Results[i].Document.business_title + '</a>&nbsp;' + featuredListing + '</h6>';
-            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + docPath + '</a><br/><p>' + content + '</p></span>';
+            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + newDocPath + '</a><br/><p>' + content + '</p></span>';
 
             //jobDetailsHTML += '<p class="description"><b>Salary:</b> $' + data.Results[i].Document.salary_range_from.toLocaleString();
             //if (data.Results[i].Document.salary_range_from != data.Results[i].Document.salary_range_to)
@@ -524,11 +525,11 @@
 
         $("#job_details_div").html(jobDetailsHTML);
     }
-    function showDiv(hdnfileName, hdnFoldername, hdnfileName2) {        
-        $('#pop').modal('show'); 
+    function showDiv(hdnfileName, hdnFoldername, hdnfileName2) {
+        $('#pop').modal('show');
         $("#pop #hdnFilename").val(hdnfileName);
         $("#pop #hdnFilename2").val(hdnfileName2);
-        $("#pop #hdnFoldername").val(hdnFoldername);  
+        $("#pop #hdnFoldername").val(hdnFoldername);
         showHidetabs(1);
     }
     function copy(selector) {
@@ -547,21 +548,21 @@
         $('.btf-tabpanel .e-tabpanel #Editorimage' + id).removeClass('tabnone');
         $('.btf-tabpanel .tabsbar div').removeClass('Addtabblue').addClass('Addtabgray');
         $('.btf-tabpanel .tabsbar #Editortab' + id).removeClass('Addtabgray').addClass('Addtabblue');
-        if (id == 1) {            
+        if (id == 1) {
             var filename = $("#pop #hdnFilename").val();
             var foldername = $("#pop #hdnFoldername").val();
-            var filename2 = $("#pop #hdnFilename2").val();            
-                $.ajax({
-                    type: "GET",
-                    data: { "fileName": filename, "folderName": foldername, "fileName2": filename2 },
-                    url: '@Url.Action("GetBlobContent", "Home")',
-                    success: function (result) {
-                        //viewSpinner(false);
-                        if (result != null && result != "") {
-                            $("#pop #txtContent").text(result);
-                        }
+            var filename2 = $("#pop #hdnFilename2").val();
+            $.ajax({
+                type: "GET",
+                data: { "fileName": filename, "folderName": foldername, "fileName2": filename2 },
+                url: '@Url.Action("GetBlobContent", "Home")',
+                success: function (result) {
+                    //viewSpinner(false);
+                    if (result != null && result != "") {
+                        $("#pop #txtContent").text(result);
                     }
-                });            
+                }
+            });
         }
     }
 </script>
@@ -608,20 +609,14 @@
             </aside>
         </div> <!-- end .page-sidebar -->
 
-        <div class="col-sm-8 page-content">
-          <!--   <div id="jobs-page-map" style="position:relative;width:750px; height:350px">
-            </div> -->
+        <div class="col-sm-8 page-content">          
+           
+        <div class="col-lg-12">
+            <div class="col-lg-8" style="padding-top: 10px;"><h3><span class="jobs-count" id="jobs-count"></span> Documents Processed</h3></div>
+            <div class="col-lg-4" style="padding-top: 0px;"><h6>FTP Name : <span id="ftpName"></span></h6></div>
+        </div>           
 
-            <h3><span class="jobs-count" id="jobs-count"></span> Documents Processed</h3>
-
-            <div class="clearfix">
-                @*<select class="form-control pull-left" id="cmbSortType" onchange="setSortType();">
-                    <option value="featured">Relevance</option>
-                    <option value="salaryDesc">Salary (High to Low)</option>
-                    <option value="salaryIncr">Salary (Low to High)</option>
-                    <option value="mostRecent">Most Recently Added</option>
-                </select>*@
-
+            <div class="clearfix">               
                 <ul id="pagination" class="pagination pull-right">
                 </ul>
             </div>

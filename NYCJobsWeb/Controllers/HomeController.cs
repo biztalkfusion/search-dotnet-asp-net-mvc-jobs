@@ -81,7 +81,7 @@ namespace NYCJobsWeb.Controllers
             
                         
             var userDetails = _userClient.GetUserDetails(UserId);
-            if (userDetails != null)
+            if (userDetails != null && !string.IsNullOrEmpty(userDetails.FolderName))
             {
                 folderName = userDetails.FolderName;
             }
