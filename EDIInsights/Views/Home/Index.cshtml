@@ -1,0 +1,557 @@
+﻿<script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.10.2.min.js"></script>
+<link rel="stylesheet" href="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.11.4/jquery-ui.min.js"></script>
+
+<!-- Attach CSS for step through tutorial tool -->
+<script src="~/Scripts/bootstrap-tour-standalone.min.js"></script>
+<link href="~/Content/bootstrap-tour-standalone.min.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.js"></script>
+<script src="~/Scripts/jQuery.highlight.js"></script>
+<link href="~/Content/Site.css" rel="stylesheet" />
+<script src="@Url.Content("~/Scripts/ace.js")" type="text/javascript"></script>
+
+<script>
+    $(document).ready(function () {
+        currentPage = 1;
+        Search();
+        $('#ftpName').text('@BizTalkFusion.Solutions.Integration.Common.Settings.FTPName');
+    });
+    var MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, salaryRangeFacet, DocDateTypeFacet, FolderTypeFacet, ErrorMessageFacet, sortType, currentPage, zipCode, maxDistance;    
+    var isErroMessage = false;
+    $(function () {
+        // Load the initial data
+        currentPage = 1;
+        MessageTypeFacet = '';
+        SendingPartnerTypeFacet = '';
+        ReceivePartnerTypeFacet = '';
+        DocDateTypeFacet = '';
+        FolderTypeFacet = '';
+        ErrorMessageFacet = '';
+        document.getElementById("q").focus(); 
+        Search();
+        // Execute search if user clicks enter
+        $("#q").keyup(function (event) {
+            if (event.keyCode == 13) {
+                Search();
+            }
+        });
+    });
+
+    function Search() {
+        $("#job_details_div").html("Loading...");
+        var q = $("#q").val();
+        if (q == '') {
+            q = '*';
+        }
+        // Get center of map to use to score the search results
+        $.post('/home/index',
+        {
+            q: q,
+            FolderTypeFacet: FolderTypeFacet,
+            MessageTypeFacet: MessageTypeFacet,
+            SendingPartnerTypeFacet: SendingPartnerTypeFacet,
+            ReceivePartnerTypeFacet: ReceivePartnerTypeFacet,
+            DocDateTypeFacet: DocDateTypeFacet,
+            currentPage: currentPage
+        },
+        function (data) {
+            UpdateMessageTypeFacets(data.Facets.MessageType);
+            UpdateSendingPartnerTypeFacets(data.Facets.SendPartnerName);
+            UpdateReceivePartnerTypeFacets(data.Facets.ReceivePartnerName);
+            UpdateDocDateTypeFacets(data.Facets.DocDate);
+            UpdateFolderTypeFacets(data.Facets.FolderName);
+            UpdateJobDetails(data);
+            UpdatePagination(data.Count);
+            UpdateFilterReset();
+        });
+        SearchErrorMessages();
+    }
+    function SearchErrorMessages() {
+        // Get center of map to use to score the search results
+        $.post('/home/errormessagesearch',
+        {
+            ErrorMessageFacet: ErrorMessageFacet,
+            currentPage: currentPage
+        },
+        function (data) {
+            UpdateErrorMessageFacets(data.Facets.FolderName);
+            if (ErrorMessageFacet != '' && ErrorMessageFacet != undefined) {
+                isErroMessage = true;
+                UpdateJobDetails(data);
+                UpdatePagination(data.Count);
+                UpdateFilterReset();
+                scrollTop("filterReset");
+            }
+        });
+    }
+    function scrollTop(divId) {
+        $('html, body').animate({
+            scrollTop: $("#" + divId).offset().top - 180
+        }, 100);
+    }
+    function UpdateFilterReset() {
+        // This allows users to remove filters
+        var htmlString = '';
+        if ((MessageTypeFacet != '' && MessageTypeFacet != undefined) || (SendingPartnerTypeFacet != '' && SendingPartnerTypeFacet != undefined) || (ReceivePartnerTypeFacet != '' && ReceivePartnerTypeFacet != undefined) || (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) || (FolderTypeFacet != '' && FolderTypeFacet != undefined) || ErrorMessageFacet != '' && ErrorMessageFacet != undefined) {
+            htmlString += '<b>Current Filters:</b><br>';
+            if (FolderTypeFacet != '' && FolderTypeFacet != undefined) {
+                htmlString += FolderTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'FolderTypeFacet\')">X</a>]<br>';
+            }
+            if (MessageTypeFacet != '' && MessageTypeFacet != undefined) {
+                htmlString += MessageTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'MessageTypeFacet\')">X</a>]<br>';
+            }
+            if (SendingPartnerTypeFacet != '' && SendingPartnerTypeFacet != undefined) {
+                htmlString += SendingPartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'SendingPartnerTypeFacet\')">X</a>]<br>';
+            }
+            if (ReceivePartnerTypeFacet != '' && ReceivePartnerTypeFacet != undefined) {
+                htmlString += ReceivePartnerTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ReceivePartnerTypeFacet\')">X</a>]<br>';
+            }
+            if (DocDateTypeFacet != '' && DocDateTypeFacet != undefined) {
+                htmlString += DocDateTypeFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'DocDateTypeFacet\')">X</a>]<br>';
+            }
+            if (ErrorMessageFacet != '' && ErrorMessageFacet != undefined) {
+                htmlString += ErrorMessageFacet + ' [<a href="javascript:void(0)" onclick="RemoveFacet(\'ErrorMessageFacet\')">X</a>]<br>';
+            }
+        }
+        $("#filterReset").html(htmlString);
+    }
+
+    function RemoveFacet(facet) {
+        // Remove a facet
+        if (facet == "FolderTypeFacet")
+            FolderTypeFacet = '';
+        if (facet == "MessageTypeFacet")
+            MessageTypeFacet = '';
+        if (facet == "SendingPartnerTypeFacet")
+            SendingPartnerTypeFacet = '';
+        if (facet == "ReceivePartnerTypeFacet")
+            ReceivePartnerTypeFacet = '';
+        if (facet == "DocDateTypeFacet")
+            DocDateTypeFacet = '';
+        if (facet == "ErrorMessageFacet")
+            ErrorMessageFacet = '';
+        currentPage = 1;
+        Search();
+    }
+    function UpdatePagination(docCount) {
+        // Update the pagination
+        var totalPages = Math.round(docCount / 10);
+        // Set a max of 5 items and set the current page in middle of pages
+        var startPage = currentPage;
+        if ((startPage == 1) || (startPage == 2))
+            startPage = 1;
+        else
+            startPage -= 2;
+
+        var maxPage = startPage + 5;
+        if (totalPages < maxPage)
+            maxPage = totalPages + 1;
+        var backPage = parseInt(currentPage) - 1;
+        if (backPage < 1)
+            backPage = 1;
+        var forwardPage = parseInt(currentPage) + 1;
+
+        var htmlString = '<li><a href="javascript:void(0)" onclick="GoToPage(\'' + backPage + '\')" class="fa fa-angle-left"></a></li>';
+        for (var i = startPage; i < maxPage; i++) {
+            if (i == currentPage)
+                htmlString += '<li  class="active"><a href="#">' + i + '</a></li>';
+            else
+                htmlString += '<li><a href="javascript:void(0)" onclick="GoToPage(\'' + parseInt(i) + '\')">' + i + '</a></li>';
+        }
+
+        htmlString += '<li><a href="javascript:void(0)" onclick="GoToPage(\'' + forwardPage + '\')" class="fa fa-angle-right"></a></li>';
+        $("#pagination").html(htmlString);
+        $("#paginationFooter").html(htmlString);
+    }
+
+    function GoToPage(page) {
+        currentPage = page;
+        if (ErrorMessageFacet != '' && ErrorMessageFacet != undefined)
+        { SearchErrorMessages(); }
+        else {
+            Search();
+        }
+    }
+
+    function UpdateFolderTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseFolderTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+        $("#FolderType_facets").html(facetResultsHTML);
+    }
+
+    function ChooseFolderTypeFacet(facet) {
+        FolderTypeFacet = facet;
+        Search();
+    }
+    function UpdateErrorMessageFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseErrorMessageFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+        $("#ErrorMessage_facets").html(facetResultsHTML);
+    }
+
+    function ChooseErrorMessageFacet(facet) {
+        ErrorMessageFacet = facet;
+        SearchErrorMessages();
+    }
+
+    function UpdateMessageTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseMessageTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+        $("#MessageType_facets").html(facetResultsHTML);
+    }
+
+    function ChooseMessageTypeFacet(facet) {
+        MessageTypeFacet = facet;
+        Search();
+    }
+
+
+    function UpdateSendingPartnerTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseSendingPartnerTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+        $("#SendingPartner_type_facets").html(facetResultsHTML);
+    }
+
+    function ChooseSendingPartnerTypeFacet(facet) {
+        SendingPartnerTypeFacet = facet;
+        Search();
+    }
+
+
+
+    function UpdateReceivePartnerTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseReceivePartnerTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+        $("#ReceivePartner_type_facets").html(facetResultsHTML);
+    }
+
+    function ChooseReceivePartnerTypeFacet(facet) {
+        ReceivePartnerTypeFacet = facet;
+        Search();
+    }
+
+
+
+    function UpdateDocDateTypeFacets(data) {
+        var facetResultsHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            facetResultsHTML += '<li><a href="javascript:void(0)" onclick="ChooseDocDateTypeFacet(\'' + data[i].Value + '\');">' + data[i].Value + ' (' + data[i].Count + ')</span></a></li>';
+        }
+        $("#DocDate_type_facets").html(facetResultsHTML);
+    }
+    function ChooseDocDateTypeFacet(facet) {
+        DocDateTypeFacet = facet;
+        Search();
+    }
+
+    function UpdateJobDetails(data) {
+        var jobDetailsHTML = '';     
+        for (var i = 0; i < data.Results.length; i++) {
+            jobDetailsHTML += '<div class="jobs-item with-thumb">';  
+            var docPath = data.Results[i].Document.Path;
+            var name = docPath.split('/');
+            var newDocPath = name[3] + "/" + name[4] + "/" + name[5];
+            var folderName = name[3];
+            var fName = name[5].split('.');
+            var finalName = fName[0];
+            var finalName2 = '';
+            if (finalName.indexOf('_') > -1) {
+                var str = finalName.split('_');
+                finalName = str[1];
+                finalName2 = str[0];
+            }
+            var hdnName = "hdn" + finalName;
+            var content = '';
+            if (isErroMessage != undefined && isErroMessage == true) {
+                content = data.Results[i].Document.ExceptionMessage;
+            }
+            if (content == undefined) {
+                content = '';
+            }           
+            jobDetailsHTML += '<span class="meta"><a href="#" class="read-more" data-toggle="modal" data-target="pop" onclick="showDiv(\'' + finalName.toString() + '\',\'' + folderName.toString() + '\',\'' + finalName2.toString() + '\');">' + newDocPath + '</a><br/><p>' + content + '</p></span>';
+            jobDetailsHTML += '</div>';
+        }
+        $("#job_details_div").html(jobDetailsHTML);
+    }
+    function showDiv(hdnfileName, hdnFoldername, hdnfileName2) {        
+        $('#pop').modal('show');       
+        if (isErroMessage != undefined && isErroMessage == true) {
+            $('.btf-tabpanel .tabsbar #Editortab3').removeAttr("style");
+        }    
+        $("#pop #hdnFilename").val(hdnfileName);
+        $("#pop #hdnFilename2").val(hdnfileName2);
+        $("#pop #hdnFoldername").val(hdnFoldername);       
+        showHidetabs(1);
+    }
+    function copy(selector) {
+        var $temp = $("<div>");
+        $(".modal-body").append($temp);
+        $temp.attr("contenteditable", true)
+             .html($(selector).html()).select()
+             .on("focus", function () { document.execCommand('selectAll', false, null) })
+             .focus();
+        document.execCommand("copy");
+        $temp.remove();
+    }
+    //Method to show hide tabs
+    function showHidetabs(id) {
+        $('.btf-tabpanel .e-tabpanel .Addtabmain').addClass('tabnone');
+        $('.btf-tabpanel .e-tabpanel #Editorimage' + id).removeClass('tabnone');
+        $('.btf-tabpanel .tabsbar div').removeClass('Addtabblue').addClass('Addtabgray');
+        $('.btf-tabpanel .tabsbar #Editortab' + id).removeClass('Addtabgray').addClass('Addtabblue');
+        if (id == 1) {
+            var filename = $("#pop #hdnFilename").val();
+            var foldername = $("#pop #hdnFoldername").val();
+            var filename2 = $("#pop #hdnFilename2").val();
+            $.ajax({
+                type: "GET",
+                data: { "fileName": filename, "folderName": foldername, "fileName2": filename2 },
+                url: '@Url.Action("GetBlobContent", "Home")',
+                success: function (result) {                    
+                    if (result != null && result != "") {
+                        $("#pop #txtContent").html(result);
+                    }
+                }
+            });
+        }
+        else if(id == 2)
+        {            
+            var filename = $("#pop #hdnFilename").val();
+            var filename2 = $("#pop #hdnFilename2").val();
+            //Replace existing one with new to reset/clear
+            $('#aceEditor').replaceWith('<div id="aceEditor" style="width: 475px;min-height:50px;"></div>');
+            $.ajax({
+                type: "GET",
+                data: { "fileName": filename, "fileName2": filename2 },
+                url: '@Url.Action("GetJsonContent", "Home")',
+                success: function (result) {                    
+                    if (result != null && result != "") {
+                        // Settings for Ace editor initiation//
+                        var editor = ace.edit('aceEditor');
+                        editor.setOptions({
+                            autoScrollEditorIntoView: true,
+                            maxLines: 8
+                        });
+                        editor.session.setMode("ace/mode/json");
+                        editor.renderer.setScrollMargin(10, 10, 10, 10);
+                        $('#btnAceCopy').prop('disabled', true);
+                        if (result != null && result != "") {
+                            editor.getSession().setMode("ace/mode/json");
+                            editor.getSession().setUseWrapMode(true);
+                            editor.getSession().setTabSize(2);
+                            editor.setValue(JSON.stringify(JSON.parse(result), null, '\t'));
+                            editor.clearSelection();
+                            $('#btnAceCopy').prop('disabled', false);
+                        }
+                        editor.setReadOnly(true);
+                    }
+                }
+            });
+        }       
+    }
+
+    function SearchWord()
+    {
+        $('#pop #txtContent').unhighlight({ element: 'span', className: 'ht' });
+        var searchString = $("#pop #q1").val();
+        $('#pop #txtContent').highlight(searchString, {
+            color: 'black',
+            background: 'yellow',
+            ignoreCase: true,
+            wholeWord: false,
+            bold: false,
+            class: "ht"
+        });
+    }
+    function aceEditorcopy(selector) {
+        var editor = ace.edit("aceEditor");
+        var $temp = $("<div>");
+        $(".modal-body").append($temp);
+        $temp.attr("contenteditable", true)
+             .html(editor.getValue()).select()
+             .on("focus", function () { document.execCommand('selectAll', false, null) })
+             .focus();
+        document.execCommand("copy");
+        $temp.remove();
+    }
+</script>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="container" style="background-color:#fff">
+            <div class="row">
+                <div class="col-sm-4 page-sidebar">
+                    <aside>
+                        <div class="sidebar-container">
+                            <div class="widget sidebar-widget jobs-search-widget">
+                                <h5 class="widget-title" id="title">Search</h5>
+                                <div class="widget-content clearfix">
+                                    <div id="remote">
+                                        <input class="form-control walkthrough-1" type="text" id="q" placeholder="Search Documents">
+                                        <input type="submit" class="search-submit" style="margin-right: 22px;" value="" onclick="Search();">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="widget sidebar-widget jobs-filter-widget">
+                                <h5 class="widget-title">Filter Results</h5>
+                                <p id="filterReset"></p>
+                                <div class="widget-content">
+
+                                    <h6>Folder</h6>
+                                    <ul class="filter-list" id="FolderType_facets"></ul>
+
+                                    <h6 id="MessageTypeFacetTitle">Message Type</h6>
+                                    <ul class="filter-list" id="MessageType_facets"></ul>
+
+                                    <h6>Sending Partners</h6>
+                                    <ul class="filter-list" id="SendingPartner_type_facets"></ul>
+
+                                    <h6>Receive Partners</h6>
+                                    <ul class="filter-list" id="ReceivePartner_type_facets"></ul>
+
+                                    <h6>Document Date</h6>
+                                    <ul class="filter-list" id="DocDate_type_facets"></ul>
+                                    <h6>Error Messages</h6>
+                                    <ul class="filter-list" id="ErrorMessage_facets"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div> <!-- end .page-sidebar -->
+
+                <div class="col-sm-8 page-content">
+                    <div class="col-lg-12">
+                        <div class="col-lg-8" style="padding-top: 10px;"><h3><span class="jobs-count" id="jobs-count"></span> Documents Processed</h3></div>
+                        <div class="col-lg-4" style="padding-top: 0px;">FTP Name : <span id="ftpName"></span></div>
+                    </div>
+
+                    <div class="clearfix">
+                        <ul id="pagination" class="pagination pull-right"></ul>
+                    </div>
+
+                    <div id="job_details_div">
+                    </div>
+
+                    <div class="clearfix">
+                        <ul id="paginationFooter" class="pagination pull-right"></ul>
+                    </div>
+                </div> <!-- end .page-content -->
+            </div> <!-- end .container -->
+            <div class="modal fade" id="pop">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            Content
+                            <input type="hidden" id="hdnFilename">
+                            <input type="hidden" id="hdnFilename2">
+                            <input type="hidden" id="hdnFoldername">                            
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-lg-12 btf-tabpanel">
+                                    <div>
+                                        <div class="tabsbar">
+                                            <div id="Editortab1" class="Addtabblue" onclick="showHidetabs(1);">
+                                                EDI
+                                            </div>
+                                            <div id="Editortab2" class="Addtabgray" onclick="showHidetabs(2);">
+                                                Json
+                                            </div>
+                                            <div id="Editortab3" class="Addtabgray" onclick="showHidetabs(3);" style="display:none">
+                                                Additional Details
+                                            </div>
+                                        </div>
+                                        <div class="e-tabpanel">
+                                            <!------------------ Type Details Tab One  ------------------>
+                                            <div id="Editorimage1" class="Addtabmain" style="line-height: 24px;">
+                                                <div class="widget sidebar-widget jobs-search-widget" style="margin-bottom:5px;">
+                                                    <div class="widget-content clearfix">
+                                                        <div id="remote" style="width:88%">
+                                                            <input class="form-control walkthrough-1" type="text" id="q1" placeholder="Search">
+                                                            <input type="submit" class="search-submit" value="" onclick="SearchWord();">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-lg-12">
+                                                        <div class="row">
+                                                            <div class="col-md-11" style="width: 88.667%;">
+                                                                <div id="txtContent" style="max-width:650px;max-height:200px;overflow-y: scroll;border: 1px solid #e6e6e6;border-radius: 3px;"></div>
+                                                            </div>
+                                                            <div class="col-md-1" style="padding-left: 0px;">
+                                                                <button onclick="copy('#txtContent')">Copy</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="Editorimage2" class="Addtabmain tabnone" style="line-height: 24px;">
+                                                <div class="row">
+                                                    <div class="col-lg-12">
+                                                        <div class="row">
+                                                            <div class="col-md-9">
+                                                                <div id="aceEditor" style="width: 475px;min-height:50px;"></div>
+                                                            </div>
+                                                            <div class="col-md-3" style="padding-left: 90px;">
+                                                                <button id="btnAceCopy" onclick="aceEditorcopy('#aceEditor')">Copy</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="Editorimage3" class="Addtabmain tabnone" style="line-height: 24px;">                                                
+                                                <div class="row">
+                                                    <div class="col-lg-12">
+                                                        <div class="row">
+                                                            <div class="col-md-11">
+                                                                <div id="txtAddDetails">
+                                                                    <div class="ui raised segment" id="textbox">
+                                                                        <p>Field: AT701</p><br/>
+                                                                        <p>{</p><br />
+                                                                        <p>AF: Carrier Departed Pick-up Location with Shipment</p><br />
+                                                                        <p>AR: Rail Arrival at Destination Intermodal Ramp</p><br />
+                                                                        <p>AV: Available for Delivery CD Carrier Departed Delivery Location</p><br />
+                                                                        <p>CP: Completed Loading at Pick-up Location</p><br />
+                                                                        <p>D1: Completed Unloading at Delivery Location</p><br />
+                                                                        <p>I1: In-Gate</p><br />
+                                                                        <p>J1: Delivered to Connecting Line</p><br />
+                                                                        <p>OA: Out-Gate</p><br />
+                                                                        <p>P1: Departed Terminal Location</p><br />
+                                                                        <p>S1: Trailer Spotted at Consignee's Location</p><br />
+                                                                        <p>SD: Shipment Delayed</p><br />
+                                                                        <p>X1: Arrived at Delivery Location</p><br />
+                                                                        <p>X3: Arrived at Pick-up Location</p><br />
+                                                                        <p>X4: Arrived at Terminal Location</p><br />
+                                                                        <p>}</p><br />
+                                                                    </div>
+                                                                </div>
+                                                            </div>                                                           
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- end .row -->
+    </div>
+</div>

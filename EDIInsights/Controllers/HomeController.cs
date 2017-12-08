@@ -1,0 +1,164 @@
+﻿using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
+using BizTalkFusion.Solutions.Integration.Attributes;
+using BizTalkFusion.Solutions.Integration.Client;
+using BizTalkFusion.Solutions.Integration.Models;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Web.Mvc;
+
+namespace BizTalkFusion.Solutions.Integration.Controllers
+{
+    [SearchAuthorize]
+    public class HomeController : BaseController
+    {
+        public const string PrefixUrl = "https://kuebixedi.blob.core.windows.net/incomingedi/EDIData/";
+        public const string ErrorMessagePrefixUrl = "/incomingedi/EDIData/";
+        private JobsSearch _jobsSearch = new JobsSearch();
+        private readonly UserClient _userClient=new UserClient();
+
+        // GET: Home
+        public ActionResult Index()
+        {
+            return View();
+        }
+        [HttpPost]
+        public ActionResult Index(string q = "",string FolderTypeFacet = "", string MessageTypeFacet = "", string SendingPartnerTypeFacet = "", string ReceivePartnerTypeFacet = "", string DocDateTypeFacet = "",
+            int currentPage = 0)
+        {
+            var folderName = "";
+            // If blank search, assume they want to search everything
+            if (string.IsNullOrEmpty(q))
+                q = "*";
+
+            string maxDistanceLat = string.Empty;
+            string maxDistanceLon = string.Empty;
+            if (SendingPartnerTypeFacet == "0")
+                SendingPartnerTypeFacet = "";
+            if (ReceivePartnerTypeFacet == "0")
+                ReceivePartnerTypeFacet = "";
+            if (DocDateTypeFacet == "0")
+                DocDateTypeFacet = "";
+                       
+            var userDetails = _userClient.GetUserDetails(UserId);
+            if(userDetails!=null && !string.IsNullOrEmpty(userDetails.FolderName))
+            {
+                folderName = userDetails.FolderName;
+            }
+            if (!string.IsNullOrEmpty(FolderTypeFacet))
+            {
+                folderName = FolderTypeFacet;
+            }
+                var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage, folderName);
+            if(response==null)
+                return RedirectToAction("Index", "Home");
+            return new JsonResult
+            {
+                // ***************************************************************************************************************************
+                // If you get an error here, make sure to check that you updated the SearchServiceName and SearchServiceApiKey in Web.config
+                // ***************************************************************************************************************************
+
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                Data = new EDIInsights() { Results = response.Results, Facets = response.Facets, Count = Convert.ToInt32(response.Count) }
+            };
+        }
+
+        public ActionResult ErrorMessageSearch(string ErrorMessageFacet = "",int currentPage = 0)
+        {
+            var folderName = "";         
+            var userDetails = _userClient.GetUserDetails(UserId);
+            if (userDetails != null && !string.IsNullOrEmpty(userDetails.FolderName))
+            {
+                folderName = userDetails.FolderName;
+            }
+            if (!string.IsNullOrEmpty(ErrorMessageFacet))
+            {
+                folderName = ErrorMessageFacet;
+            }
+            var response = _jobsSearch.ErrorMessageSearch(currentPage, folderName);
+            if (response == null)
+                return null;
+            return new JsonResult
+            {
+                // ***************************************************************************************************************************
+                // If you get an error here, make sure to check that you updated the SearchServiceName and SearchServiceApiKey in Web.config
+                // ***************************************************************************************************************************
+
+                JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+                Data = new EDIInsights() { Results = response.Results, Facets = response.Facets, Count = Convert.ToInt32(response.Count) }
+            };
+        }      
+
+        public JsonResult GetBlobContent(string fileName, string folderName, string fileName2 = "")
+        {
+            var jsonResult = "";
+            var searchString = "";
+            var fullfilter = PrefixUrl + folderName + "/Inbound/";// + fileName;
+            if (!string.IsNullOrEmpty(fileName2))
+            {
+                fullfilter += fileName2 + "_" + fileName;
+            }
+            else
+            {
+                fullfilter += fileName;
+            }
+            searchString = "metadata_storage_path:\"" + fullfilter + "\"";
+            var parameters = new SearchParameters()
+            {
+                Select = new[] { "content" },
+                SearchMode = SearchMode.All,
+                QueryType = QueryType.Full
+            };
+            ISearchIndexClient docdbindexClient = CreateSearchIndexClient();
+            var documentDBResult = docdbindexClient.Documents.Search(searchString, parameters);
+            if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
+            {
+                jsonResult = Convert.ToString(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
+                if(jsonResult.IndexOf("\r\n")==-1)
+                {
+                    jsonResult = jsonResult.Replace("~", "~\r\n");
+                }
+                
+            }
+            return Json(jsonResult, JsonRequestBehavior.AllowGet);
+        }
+        private static SearchIndexClient CreateSearchIndexClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceblobApiKey"];            
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "azureblob-index", new SearchCredentials(queryApiKey));
+            return indexClient;
+        }
+        public JsonResult GetJsonContent(string fileName, string fileName2 = "")
+        {
+            var jsonResult = "";
+            var fullfilter = "";                      
+            if (!string.IsNullOrEmpty(fileName2))
+            {
+                fullfilter += fileName2 + "_" + fileName;
+            }
+            else
+            {
+                fullfilter += fileName;
+            }           
+            ISearchIndexClient docdbindexClient = CreateDocDBSearchIndexClient();
+            SearchParameters sp = new SearchParameters() { Select = new List<String>() { "x12_00401" }, SearchMode = SearchMode.All };            
+            var documentDBResult = docdbindexClient.Documents.Search(fullfilter, sp);
+            if (documentDBResult.Results != null && documentDBResult.Results.Count > 0)
+            {
+                jsonResult = Convert.ToString(documentDBResult.Results.FirstOrDefault().Document.FirstOrDefault().Value);
+            }
+            return Json(jsonResult, JsonRequestBehavior.AllowGet);
+        }
+        private static SearchIndexClient CreateDocDBSearchIndexClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
+            string queryApiKey = ConfigurationManager.AppSettings["SearchServiceblobApiKey"];
+
+            SearchIndexClient indexClient = new SearchIndexClient(searchServiceName, "documentdb-index", new SearchCredentials(queryApiKey));            
+            return indexClient;
+        }
+    }
+}
