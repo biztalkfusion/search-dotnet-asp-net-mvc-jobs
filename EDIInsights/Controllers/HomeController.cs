@@ -16,7 +16,7 @@ namespace BizTalkFusion.Solutions.Integration.Controllers
     {
         public const string PrefixUrl = "https://kuebixedi.blob.core.windows.net/incomingedi/EDIData/";
         public const string ErrorMessagePrefixUrl = "/incomingedi/EDIData/";
-        private JobsSearch _jobsSearch = new JobsSearch();
+        private DocumentsSearch _docSearch = new DocumentsSearch();
         private readonly UserClient _userClient=new UserClient();
 
         // GET: Home
@@ -51,7 +51,7 @@ namespace BizTalkFusion.Solutions.Integration.Controllers
             {
                 folderName = FolderTypeFacet;
             }
-                var response = _jobsSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage, folderName);
+                var response = _docSearch.Search(q, MessageTypeFacet, SendingPartnerTypeFacet, ReceivePartnerTypeFacet, DocDateTypeFacet,currentPage, folderName);
             if(response==null)
                 return RedirectToAction("Index", "Home");
             return new JsonResult
@@ -77,7 +77,7 @@ namespace BizTalkFusion.Solutions.Integration.Controllers
             {
                 folderName = ErrorMessageFacet;
             }
-            var response = _jobsSearch.ErrorMessageSearch(currentPage, folderName);
+            var response = _docSearch.ErrorMessageSearch(currentPage, folderName);
             if (response == null)
                 return null;
             return new JsonResult

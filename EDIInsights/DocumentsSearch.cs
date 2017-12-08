@@ -6,7 +6,7 @@ using System.Configuration;
 
 namespace BizTalkFusion.Solutions.Integration
 {
-    public class JobsSearch
+    public class DocumentsSearch
     {
         private static SearchServiceClient _searchClient;
         private static ISearchIndexClient _indexClient;
@@ -15,7 +15,7 @@ namespace BizTalkFusion.Solutions.Integration
         private static string ErrorIndexName = "edibadmessages-index";
         public static string errorMessage;
 
-        static JobsSearch()
+        static DocumentsSearch()
         {
             try
             {

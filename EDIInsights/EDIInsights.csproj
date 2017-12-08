@@ -239,7 +239,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="JobsSearch.cs" />
+    <Compile Include="DocumentsSearch.cs" />
     <Compile Include="Models\EDIInsights.cs" />
     <Compile Include="Models\Login.cs" />
     <Compile Include="Models\Result.cs" />
